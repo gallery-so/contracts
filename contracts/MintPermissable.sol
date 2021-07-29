@@ -29,4 +29,13 @@ contract MintPermissable {
     function allowMintPermit(address to, uint256 tokenId) public virtual {
         _accessGranters[tokenId] = to;
     }
+
+    function allowMintPermitMany(address to, uint256[] memory tokenIds)
+        public
+        virtual
+    {
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            _accessGranters[tokenIds[i]] = to;
+        }
+    }
 }
