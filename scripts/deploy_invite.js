@@ -1,7 +1,7 @@
 const { ethers, upgrades } = require("hardhat")
 
 async function main() {
-  const Contract = await ethers.getContractFactory("Invite")
+  const Contract = await ethers.getContractFactory("InviteMintDeferrable")
   console.log("Deploying Contract...")
   const contract = await upgrades.deployProxy(
     Contract,
