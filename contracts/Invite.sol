@@ -74,7 +74,12 @@ contract Invite is
         address from,
         address to,
         uint256 tokenId
-    ) internal virtual override(ERC721Upgradeable) mustBeRedeemed(tokenId) {
+    )
+        internal
+        virtual
+        override(ERC721Upgradeable)
+        mustBeRedeemedBy(tokenId, from)
+    {
         super._beforeTokenTransfer(from, to, tokenId);
     }
 
