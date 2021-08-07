@@ -34,14 +34,13 @@ contract Invite is
         __ERC165_init_unchained();
         __AccessControl_init_unchained();
         __ERC721_init_unchained(name, symbol);
-        __invite_init_unchained(name, symbol, baseTokenURI);
+        __invite_init_unchained(baseTokenURI);
     }
 
-    function __invite_init_unchained(
-        string memory name,
-        string memory symbol,
-        string memory baseTokenURI
-    ) internal initializer {
+    function __invite_init_unchained(string memory baseTokenURI)
+        internal
+        initializer
+    {
         _baseTokenURI = baseTokenURI;
 
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
