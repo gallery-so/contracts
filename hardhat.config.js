@@ -4,7 +4,7 @@ require("@openzeppelin/hardhat-upgrades")
 const { API_URL, PRIVATE_KEY, PUBLIC_KEY } = process.env
 module.exports = {
   solidity: {
-    version: "0.8.0",
+    version: "0.8.6",
     settings: {
       optimizer: {
         enabled: true,

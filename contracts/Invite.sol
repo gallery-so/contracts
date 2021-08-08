@@ -10,7 +10,6 @@ import "./Redeemable.sol";
 
 contract Invite is
     Initializable,
-    ContextUpgradeable,
     AccessControlUpgradeable,
     ERC721Upgradeable,
     Redeemable
@@ -30,7 +29,6 @@ contract Invite is
         string memory symbol,
         string memory baseTokenURI
     ) internal initializer {
-        __Context_init_unchained();
         __ERC165_init_unchained();
         __AccessControl_init_unchained();
         __ERC721_init_unchained(name, symbol);
@@ -43,7 +41,7 @@ contract Invite is
     {
         _baseTokenURI = baseTokenURI;
 
-        _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
+        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
     function _baseURI() internal view virtual override returns (string memory) {
@@ -73,12 +71,11 @@ contract Invite is
         address from,
         address to,
         uint256 tokenId
-    )
-        internal
-        virtual
-        override(ERC721Upgradeable)
-        mustBeRedeemedBy(tokenId, from)
-    {
+    ) internal virtual override(ERC721Upgradeable) {
+        require(
+            isRedeemed(tokenId) || !_exists(tokenId),
+            "Invite: Token must be redeemed before transfer"
+        );
         super._beforeTokenTransfer(from, to, tokenId);
     }
 
@@ -94,7 +91,7 @@ contract Invite is
 
     function redeem(uint256 _tokenId) public virtual override {
         require(
-            _isApprovedOrOwner(_msgSender(), _tokenId),
+            _isApprovedOrOwner(msg.sender, _tokenId),
             "Invite: transfer caller is not owner nor approved"
         );
         super.redeem(_tokenId);
