@@ -6,14 +6,14 @@
     "start": "node app.js"
   },
   "dependencies": {
-    "@alch/alchemy-web3": "^1.0.3",
-    "@openzeppelin/contracts-upgradeable": "^4.1.0",
+    "@alch/alchemy-web3": ">=1.0.3",
+    "@openzeppelin/contracts-upgradeable": ">=4.1.0",
     "dotenv": "^10.0.0"
   },
   "devDependencies": {
-    "@nomiclabs/hardhat-ethers": "^2.0.2",
-    "@openzeppelin/hardhat-upgrades": "^1.8.2",
-    "ethers": "^5.3.0",
-    "hardhat": "^2.3.0"
+    "@nomiclabs/hardhat-ethers": ">=2.0.2",
+    "@openzeppelin/hardhat-upgrades": ">=1.8.2",
+    "ethers": ">=5.3.0",
+    "hardhat": ">=2.3.0"
   }
 }

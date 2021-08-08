@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 
 contract Redeemable {
     mapping(uint256 => address) private _redeemed;
-    mapping(uint256 => address) private _redeemable;
 
     modifier mustNotBeRedeemed(uint256 tokenId) {
         require(_redeemed[tokenId] == address(0));
@@ -33,9 +32,8 @@ contract Redeemable {
         return _redeemed[tokenId] == redeemer;
     }
 
-    function redeem(uint256 _tokenId) public {
-        require(_redeemable[_tokenId] == msg.sender);
+    function redeem(uint256 _tokenId) public virtual {
+        require(_redeemed[_tokenId] == address(0));
         _redeemed[_tokenId] = msg.sender;
-        _redeemable[_tokenId] = address(0);
     }
 }

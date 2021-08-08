@@ -36,14 +36,13 @@ contract InviteMintDeferrable is
         __ERC165_init_unchained();
         __AccessControl_init_unchained();
         __ERC721_init_unchained(name, symbol);
-        __invite_init_unchained(name, symbol, baseTokenURI);
+        __invite_init_unchained(baseTokenURI);
     }
 
-    function __invite_init_unchained(
-        string memory name,
-        string memory symbol,
-        string memory baseTokenURI
-    ) internal initializer {
+    function __invite_init_unchained(string memory baseTokenURI)
+        internal
+        initializer
+    {
         _baseTokenURI = baseTokenURI;
 
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
@@ -100,5 +99,13 @@ contract InviteMintDeferrable is
         onlyRole(DEFAULT_ADMIN_ROLE)
     {
         super.allowMintPermitMany(to, tokenIds);
+    }
+
+    function redeem(uint256 _tokenId) public virtual override {
+        require(
+            _isApprovedOrOwner(_msgSender(), _tokenId),
+            "Invite: transfer caller is not owner nor approved"
+        );
+        super.redeem(_tokenId);
     }
 }

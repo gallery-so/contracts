@@ -91,4 +91,12 @@ contract Invite is
     {
         return super.supportsInterface(interfaceId);
     }
+
+    function redeem(uint256 _tokenId) public virtual override {
+        require(
+            _isApprovedOrOwner(_msgSender(), _tokenId),
+            "Invite: transfer caller is not owner nor approved"
+        );
+        super.redeem(_tokenId);
+    }
 }
