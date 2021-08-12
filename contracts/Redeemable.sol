@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.6;
 
 contract Redeemable {
     mapping(uint256 => address) private _redeemed;

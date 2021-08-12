@@ -4,17 +4,14 @@ pragma solidity ^0.8.6;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "./Redeemable.sol";
-import "./MintPermissable.sol";
 
-contract InviteMintDeferrable721 is
+contract Invite721 is
     Initializable,
     AccessControlUpgradeable,
     ERC721Upgradeable,
-    Redeemable,
-    MintPermissable
+    Redeemable
 {
     function initialize(
         string memory name,
@@ -53,9 +50,20 @@ contract InviteMintDeferrable721 is
     function mint(address to, uint256 tokenId)
         public
         virtual
-        mustHaveMintPermission(tokenId, to)
+        onlyRole(DEFAULT_ADMIN_ROLE)
     {
         _mint(to, tokenId);
+    }
+
+    function mintBatch(address[] memory tos, uint256[] memory tokenIds)
+        public
+        virtual
+        onlyRole(DEFAULT_ADMIN_ROLE)
+    {
+        require(tos.length == tokenIds.length);
+        for (uint256 i = 0; i < tos.length; i++) {
+            _mint(tos[i], tokenIds[i]);
+        }
     }
 
     function _beforeTokenTransfer(
@@ -78,24 +86,6 @@ contract InviteMintDeferrable721 is
         returns (bool)
     {
         return super.supportsInterface(interfaceId);
-    }
-
-    function allowMintPermit(address to, uint256 tokenId)
-        public
-        virtual
-        override
-        onlyRole(DEFAULT_ADMIN_ROLE)
-    {
-        super.allowMintPermit(to, tokenId);
-    }
-
-    function allowMintPermitMany(address to, uint256[] memory tokenIds)
-        public
-        virtual
-        override
-        onlyRole(DEFAULT_ADMIN_ROLE)
-    {
-        super.allowMintPermitMany(to, tokenIds);
     }
 
     function redeem(uint256 _tokenId) public virtual override {

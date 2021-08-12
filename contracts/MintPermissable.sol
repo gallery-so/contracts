@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.6;
 
 contract MintPermissable {
     // mapping of token ids to the address of the address that can mint them
