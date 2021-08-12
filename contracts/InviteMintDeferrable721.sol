@@ -9,7 +9,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "./Redeemable.sol";
 import "./MintPermissable.sol";
 
-contract InviteMintDeferrable is
+contract InviteMintDeferrable721 is
     Initializable,
     AccessControlUpgradeable,
     ERC721Upgradeable,
