@@ -9,7 +9,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 contract Invite1155 is
     Initializable,
     AccessControlUpgradeable,
-    ERC1155Upgradeable,
+    ERC1155Upgradeable
 {
     function initialize(string memory baseTokenURI) public virtual initializer {
         __invite_init(baseTokenURI);
@@ -66,6 +66,4 @@ contract Invite1155 is
     {
         return super.supportsInterface(interfaceId);
     }
-
-    
 }
