@@ -66,18 +66,6 @@ contract Invite721 is
         }
     }
 
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 tokenId
-    ) internal virtual override(ERC721Upgradeable) {
-        require(
-            isRedeemed(tokenId) || !_exists(tokenId),
-            "Invite: Token must be redeemed before transfer"
-        );
-        super._beforeTokenTransfer(from, to, tokenId);
-    }
-
     function supportsInterface(bytes4 interfaceId)
         public
         view
