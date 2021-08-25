@@ -1,30 +1,23 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.6;
+pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts-upgradeable/token/ERC1155/IERC1155Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC1155/IERC1155ReceiverUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC1155/extensions/IERC1155MetadataURIUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
+import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
+import "@openzeppelin/contracts/token/ERC1155/extensions/IERC1155MetadataURI.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts/utils/Context.sol";
+import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 /**
- * @dev OpenZeppelin implementation of the basic standard multi-token.
+ * @dev Implementation of the basic standard multi-token.
  * See https://eips.ethereum.org/EIPS/eip-1155
  * Originally based on code by Enjin: https://github.com/enjin/erc-1155
- * Adapted by Benny Conn
+ *
  * _Available since v3.1._
  */
-contract ERC1155Upgradeable is
-    Initializable,
-    ContextUpgradeable,
-    ERC165Upgradeable,
-    IERC1155Upgradeable,
-    IERC1155MetadataURIUpgradeable
-{
-    using AddressUpgradeable for address;
+contract ERC1155 is Context, ERC165, IERC1155, IERC1155MetadataURI {
+    using Address for address;
 
     // Mapping from token ID to account balances
     mapping(uint256 => mapping(address => uint256)) internal balances;
@@ -38,13 +31,7 @@ contract ERC1155Upgradeable is
     /**
      * @dev See {_setURI}.
      */
-    function __ERC1155_init(string memory uri_) internal initializer {
-        __Context_init_unchained();
-        __ERC165_init_unchained();
-        __ERC1155_init_unchained(uri_);
-    }
-
-    function __ERC1155_init_unchained(string memory uri_) internal initializer {
+    constructor(string memory uri_) {
         _setURI(uri_);
     }
 
@@ -55,12 +42,12 @@ contract ERC1155Upgradeable is
         public
         view
         virtual
-        override(ERC165Upgradeable, IERC165Upgradeable)
+        override(ERC165, IERC165)
         returns (bool)
     {
         return
-            interfaceId == type(IERC1155Upgradeable).interfaceId ||
-            interfaceId == type(IERC1155MetadataURIUpgradeable).interfaceId ||
+            interfaceId == type(IERC1155).interfaceId ||
+            interfaceId == type(IERC1155MetadataURI).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 
@@ -86,7 +73,7 @@ contract ERC1155Upgradeable is
      * - `account` cannot be the zero address.
      */
     function balanceOf(address account, uint256 id)
-        external
+        public
         view
         virtual
         override
@@ -107,7 +94,7 @@ contract ERC1155Upgradeable is
      * - `accounts` and `ids` must have the same length.
      */
     function balanceOfBatch(address[] memory accounts, uint256[] memory ids)
-        external
+        public
         view
         virtual
         override
@@ -121,7 +108,7 @@ contract ERC1155Upgradeable is
         uint256[] memory batchBalances = new uint256[](accounts.length);
 
         for (uint256 i = 0; i < accounts.length; ++i) {
-            batchBalances[i] = balances[ids[i]][accounts[i]];
+            batchBalances[i] = balanceOf(accounts[i], ids[i]);
         }
 
         return batchBalances;
@@ -166,7 +153,7 @@ contract ERC1155Upgradeable is
         uint256 id,
         uint256 amount,
         bytes memory data
-    ) external virtual override {
+    ) public virtual override {
         require(
             from == _msgSender() || isApprovedForAll(from, _msgSender()),
             "ERC1155: caller is not owner nor approved"
@@ -183,7 +170,7 @@ contract ERC1155Upgradeable is
         uint256[] memory ids,
         uint256[] memory amounts,
         bytes memory data
-    ) external virtual override {
+    ) public virtual override {
         require(
             from == _msgSender() || isApprovedForAll(from, _msgSender()),
             "ERC1155: transfer caller is not owner nor approved"
@@ -318,6 +305,167 @@ contract ERC1155Upgradeable is
     }
 
     /**
+     * @dev Creates `amount` tokens of token type `id`, and assigns them to `account`.
+     *
+     * Emits a {TransferSingle} event.
+     *
+     * Requirements:
+     *
+     * - `account` cannot be the zero address.
+     * - If `account` refers to a smart contract, it must implement {IERC1155Receiver-onERC1155Received} and return the
+     * acceptance magic value.
+     */
+    function _mint(
+        address account,
+        uint256 id,
+        uint256 amount,
+        bytes memory data
+    ) internal virtual {
+        require(account != address(0), "ERC1155: mint to the zero address");
+
+        address operator = _msgSender();
+
+        _beforeTokenTransfer(
+            operator,
+            address(0),
+            account,
+            _asSingletonArray(id),
+            _asSingletonArray(amount),
+            data
+        );
+
+        balances[id][account] += amount;
+        emit TransferSingle(operator, address(0), account, id, amount);
+
+        _doSafeTransferAcceptanceCheck(
+            operator,
+            address(0),
+            account,
+            id,
+            amount,
+            data
+        );
+    }
+
+    /**
+     * @dev xref:ROOT:erc1155.adoc#batch-operations[Batched] version of {_mint}.
+     *
+     * Requirements:
+     *
+     * - `ids` and `amounts` must have the same length.
+     * - If `to` refers to a smart contract, it must implement {IERC1155Receiver-onERC1155BatchReceived} and return the
+     * acceptance magic value.
+     */
+    function _mintBatch(
+        address to,
+        uint256[] memory ids,
+        uint256[] memory amounts,
+        bytes memory data
+    ) internal virtual {
+        require(to != address(0), "ERC1155: mint to the zero address");
+        require(
+            ids.length == amounts.length,
+            "ERC1155: ids and amounts length mismatch"
+        );
+
+        address operator = _msgSender();
+
+        _beforeTokenTransfer(operator, address(0), to, ids, amounts, data);
+
+        for (uint256 i = 0; i < ids.length; i++) {
+            balances[ids[i]][to] += amounts[i];
+        }
+
+        emit TransferBatch(operator, address(0), to, ids, amounts);
+
+        _doSafeBatchTransferAcceptanceCheck(
+            operator,
+            address(0),
+            to,
+            ids,
+            amounts,
+            data
+        );
+    }
+
+    /**
+     * @dev Destroys `amount` tokens of token type `id` from `account`
+     *
+     * Requirements:
+     *
+     * - `account` cannot be the zero address.
+     * - `account` must have at least `amount` tokens of token type `id`.
+     */
+    function _burn(
+        address account,
+        uint256 id,
+        uint256 amount
+    ) internal virtual {
+        require(account != address(0), "ERC1155: burn from the zero address");
+
+        address operator = _msgSender();
+
+        _beforeTokenTransfer(
+            operator,
+            account,
+            address(0),
+            _asSingletonArray(id),
+            _asSingletonArray(amount),
+            ""
+        );
+
+        uint256 accountBalance = balances[id][account];
+        require(
+            accountBalance >= amount,
+            "ERC1155: burn amount exceeds balance"
+        );
+        unchecked {
+            balances[id][account] = accountBalance - amount;
+        }
+
+        emit TransferSingle(operator, account, address(0), id, amount);
+    }
+
+    /**
+     * @dev xref:ROOT:erc1155.adoc#batch-operations[Batched] version of {_burn}.
+     *
+     * Requirements:
+     *
+     * - `ids` and `amounts` must have the same length.
+     */
+    function _burnBatch(
+        address account,
+        uint256[] memory ids,
+        uint256[] memory amounts
+    ) internal virtual {
+        require(account != address(0), "ERC1155: burn from the zero address");
+        require(
+            ids.length == amounts.length,
+            "ERC1155: ids and amounts length mismatch"
+        );
+
+        address operator = _msgSender();
+
+        _beforeTokenTransfer(operator, account, address(0), ids, amounts, "");
+
+        for (uint256 i = 0; i < ids.length; i++) {
+            uint256 id = ids[i];
+            uint256 amount = amounts[i];
+
+            uint256 accountBalance = balances[id][account];
+            require(
+                accountBalance >= amount,
+                "ERC1155: burn amount exceeds balance"
+            );
+            unchecked {
+                balances[id][account] = accountBalance - amount;
+            }
+        }
+
+        emit TransferBatch(operator, account, address(0), ids, amounts);
+    }
+
+    /**
      * @dev Hook that is called before any token transfer. This includes minting
      * and burning, as well as batched variants.
      *
@@ -356,7 +504,7 @@ contract ERC1155Upgradeable is
     ) internal {
         if (to.isContract()) {
             try
-                IERC1155ReceiverUpgradeable(to).onERC1155Received(
+                IERC1155Receiver(to).onERC1155Received(
                     operator,
                     from,
                     id,
@@ -364,10 +512,7 @@ contract ERC1155Upgradeable is
                     data
                 )
             returns (bytes4 response) {
-                if (
-                    response !=
-                    IERC1155ReceiverUpgradeable(to).onERC1155Received.selector
-                ) {
+                if (response != IERC1155Receiver.onERC1155Received.selector) {
                     revert("ERC1155: ERC1155Receiver rejected tokens");
                 }
             } catch Error(string memory reason) {
@@ -388,7 +533,7 @@ contract ERC1155Upgradeable is
     ) internal {
         if (to.isContract()) {
             try
-                IERC1155ReceiverUpgradeable(to).onERC1155BatchReceived(
+                IERC1155Receiver(to).onERC1155BatchReceived(
                     operator,
                     from,
                     ids,
@@ -397,10 +542,7 @@ contract ERC1155Upgradeable is
                 )
             returns (bytes4 response) {
                 if (
-                    response !=
-                    IERC1155ReceiverUpgradeable(to)
-                        .onERC1155BatchReceived
-                        .selector
+                    response != IERC1155Receiver.onERC1155BatchReceived.selector
                 ) {
                     revert("ERC1155: ERC1155Receiver rejected tokens");
                 }
@@ -422,6 +564,4 @@ contract ERC1155Upgradeable is
 
         return array;
     }
-
-    uint256[47] private __gap;
 }

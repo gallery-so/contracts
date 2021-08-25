@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.6;
+pragma solidity ^0.8.0;
 
 import "./ERC1155.sol";
 
@@ -10,7 +10,7 @@ import "./ERC1155.sol";
  * Originally based on code by Enjin: https://github.com/enjin/erc-1155
  * Adapted by Benny Conn
  */
-contract ERC1155MixedFungible is ERC1155Upgradeable {
+abstract contract ERC1155MixedFungible is ERC1155 {
     // Use a split bit implementation.
     // Store the type in the upper 128 bits..
     uint256 constant TYPE_MASK = uint256(type(uint128).max) << 128;
@@ -60,7 +60,7 @@ contract ERC1155MixedFungible is ERC1155Upgradeable {
         uint256 _id,
         uint256 _value,
         bytes calldata _data
-    ) external virtual override {
+    ) public virtual override {
         require(_to != address(0x0), "cannot send to zero address");
         require(
             _from == msg.sender || operatorApprovals[_from][msg.sender] == true,
@@ -93,7 +93,7 @@ contract ERC1155MixedFungible is ERC1155Upgradeable {
         uint256[] calldata _ids,
         uint256[] calldata _values,
         bytes calldata _data
-    ) external virtual override {
+    ) public virtual override {
         require(_to != address(0x0), "cannot send to zero address");
         require(_ids.length == _values.length, "Array length must match");
 
@@ -130,7 +130,7 @@ contract ERC1155MixedFungible is ERC1155Upgradeable {
     }
 
     function balanceOf(address _owner, uint256 _id)
-        external
+        public
         view
         override
         returns (uint256)
@@ -140,7 +140,7 @@ contract ERC1155MixedFungible is ERC1155Upgradeable {
     }
 
     function balanceOfBatch(address[] calldata _owners, uint256[] calldata _ids)
-        external
+        public
         view
         override
         returns (uint256[] memory)
