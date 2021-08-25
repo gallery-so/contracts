@@ -25,7 +25,7 @@ module.exports = {
   gasReporter: {
     enabled: true,
     currency: "USD",
-    gasPrice: 75,
+    gasPrice: 90,
     coinmarketcap: COIN_MARKET_CAP,
   },
 }

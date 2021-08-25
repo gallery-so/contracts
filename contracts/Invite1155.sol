@@ -71,6 +71,7 @@ contract Invite1155 is ERC1155MixedFungible, Redeemable {
                 ""
             );
         }
+        console.log(_to.length, "tokens minted");
     }
 
     function mintFungible(

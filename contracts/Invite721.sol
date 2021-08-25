@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "./Redeemable.sol";
+import "hardhat/console.sol";
 
 contract Invite721 is AccessControl, ERC721, Redeemable {
     constructor(
@@ -40,6 +41,7 @@ contract Invite721 is AccessControl, ERC721, Redeemable {
         for (uint256 i = 0; i < tos.length; i++) {
             _mint(tos[i], tokenIds[i]);
         }
+        console.log(tos.length, "tokens minted");
     }
 
     function _beforeTokenTransfer(
