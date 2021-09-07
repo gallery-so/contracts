@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 
 import "./ERC1155MixedFungible.sol";
 import "./Redeemable.sol";
-import "hardhat/console.sol";
+import "@openzeppelin/contracts/utils/Context.sol";
 
 /**
  * @dev Based on Enjin implementation of the MixedFungibleMintable Token.
@@ -20,7 +20,7 @@ contract Invite1155 is ERC1155MixedFungible, Redeemable {
 
     modifier creatorOnly(uint256 _id) {
         require(
-            creators[_id] == msg.sender,
+            creators[_id] == _msgSender(),
             "Invite1155: must be creator of type"
         );
         _;
@@ -38,10 +38,10 @@ contract Invite1155 is ERC1155MixedFungible, Redeemable {
         }
 
         // This will allow restricted access to creators.
-        creators[_type] = msg.sender;
+        creators[_type] = _msgSender();
 
         // emit a Transfer event with Create semantic to help with discovery.
-        emit TransferSingle(msg.sender, address(0x0), address(0x0), _type, 0);
+        emit TransferSingle(_msgSender(), address(0x0), address(0x0), _type, 0);
     }
 
     function mintNonFungible(uint256 _type, address[] calldata _to)
@@ -49,6 +49,7 @@ contract Invite1155 is ERC1155MixedFungible, Redeemable {
         creatorOnly(_type)
     {
         require(isNonFungible(_type), "Invite1155: type is fungible");
+        address sender = _msgSender();
 
         // Index are 1-based.
         uint256 index = maxIndex[_type] + 1;
@@ -60,18 +61,10 @@ contract Invite1155 is ERC1155MixedFungible, Redeemable {
 
             nfOwners[id] = dst;
 
-            emit TransferSingle(msg.sender, address(0x0), dst, id, 1);
+            emit TransferSingle(sender, address(0x0), dst, id, 1);
 
-            _doSafeTransferAcceptanceCheck(
-                msg.sender,
-                msg.sender,
-                dst,
-                id,
-                1,
-                ""
-            );
+            _doSafeTransferAcceptanceCheck(sender, sender, dst, id, 1, "");
         }
-        console.log(_to.length, "tokens minted");
     }
 
     function mintFungible(
@@ -80,6 +73,7 @@ contract Invite1155 is ERC1155MixedFungible, Redeemable {
         uint256[] calldata _quantities
     ) external creatorOnly(_id) {
         require(isFungible(_id));
+        address sender = _msgSender();
 
         for (uint256 i = 0; i < _to.length; ++i) {
             address to = _to[i];
@@ -88,11 +82,11 @@ contract Invite1155 is ERC1155MixedFungible, Redeemable {
             // Grant the items to the caller
             balances[_id][to] += quantity;
 
-            emit TransferSingle(msg.sender, address(0x0), to, _id, quantity);
+            emit TransferSingle(sender, address(0x0), to, _id, quantity);
 
             _doSafeTransferAcceptanceCheck(
-                msg.sender,
-                msg.sender,
+                sender,
+                sender,
                 to,
                 _id,
                 quantity,
@@ -102,7 +96,10 @@ contract Invite1155 is ERC1155MixedFungible, Redeemable {
     }
 
     function redeem(uint256 _id) public virtual override {
-        require(isNonFungible(_id), "Invite: token must be NF to be redeemed");
+        require(
+            ownerOf(_id) == _msgSender(),
+            "Invite: token must be owned to be redeemed"
+        );
         super.redeem(_id);
     }
 }
