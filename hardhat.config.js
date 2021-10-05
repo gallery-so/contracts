@@ -16,7 +16,7 @@ module.exports = {
     hardhat: {
       from: PUBLIC_KEY,
     },
-    ropsten: {
+    main: {
       url: API_URL,
       accounts: [`0x${PRIVATE_KEY}`],
       from: PUBLIC_KEY,

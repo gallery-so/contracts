@@ -1,6 +1,6 @@
 async function main() {
   const Contract = await ethers.getContractFactory("Invite1155")
-  const contract = await Contract.deploy()
+  const contract = await Contract.deploy("ipfs://blahblahblah/{id}")
   console.log("Contract deployed to address:", contract.address)
 }
 

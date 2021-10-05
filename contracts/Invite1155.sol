@@ -12,22 +12,20 @@ import "@openzeppelin/contracts/utils/Timers.sol";
  * Adapted by Benny Conn
  */
 contract Invite1155 is ERC1155, Ownable {
-    using Timers for Timers.Timestamp;
+    // using Timers for Timers.Timestamp;
 
-    Timers.Timestamp mintTimer = Timers.Timestamp(0);
+    // Timers.Timestamp mintTimer = Timers.Timestamp(0);
 
-    constructor(string memory baseTokenURI, uint64 deadline)
-        ERC1155(baseTokenURI)
-    {
-        mintTimer.setDeadline(deadline);
+    constructor(string memory baseTokenURI) ERC1155(baseTokenURI) {
+        // mintTimer.setDeadline(deadline);
     }
 
-    mapping(uint256 => mapping(address => uint256)) private _mintApproved;
+    mapping(uint256 => mapping(address => uint256)) private _mintApprovals;
 
     function mintToMany(
-        uint256 _id,
         address[] calldata _to,
-        uint256[] calldata _quantities
+        uint256[] calldata _quantities,
+        uint256 _id
     ) external onlyOwner {
         for (uint256 i = 0; i < _to.length; ++i) {
             address to = _to[i];
@@ -38,22 +36,44 @@ contract Invite1155 is ERC1155, Ownable {
 
     function mint(
         address to,
-        uint256 id,
-        uint256 amount
+        uint256 amount,
+        uint256 id
     ) external {
         require(
-            _mintApproved[id][msg.sender] >= amount,
+            _mintApprovals[id][msg.sender] >= amount,
             "Invite: not approved to mint"
         );
-        require(mintTimer.isExpired(), "Invite: minting not open");
+        // require(mintTimer.isExpired(), "Invite: minting not open");
         _mint(to, id, amount, bytes(""));
     }
 
     function setMintApproval(
         address spender,
-        uint256 id,
-        uint256 amount
+        uint256 amount,
+        uint256 id
     ) external onlyOwner {
-        _mintApproved[id][spender] = amount;
+        _mintApprovals[id][spender] = amount;
+    }
+
+    function setMintApprovals(
+        address[] calldata spender,
+        uint256[] calldata amounts,
+        uint256 id
+    ) external onlyOwner {
+        require(
+            spender.length == amounts.length,
+            "Invite: spender and amounts arrays must be the same length"
+        );
+        for (uint256 i = 0; i < spender.length; ++i) {
+            _mintApprovals[id][spender[i]] = amounts[i];
+        }
+    }
+
+    function getMintApproval(address spender, uint256 id)
+        external
+        view
+        returns (uint256)
+    {
+        return _mintApprovals[id][spender];
     }
 }
