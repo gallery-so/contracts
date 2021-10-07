@@ -3,15 +3,11 @@
 pragma solidity ^0.8.0;
 
 import "./ERC1155.sol";
+import "./Whitelistable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Timers.sol";
 
-/**
- * @dev Based on Enjin implementation of the MixedFungibleMintable Token.
- * https://github.com/enjin/erc-1155
- * Adapted by Benny Conn
- */
-contract Invite1155 is ERC1155, Ownable {
+contract Invite1155 is ERC1155, Ownable, Whitelistable {
     // using Timers for Timers.Timestamp;
 
     // Timers.Timestamp mintTimer = Timers.Timestamp(0);
@@ -40,7 +36,8 @@ contract Invite1155 is ERC1155, Ownable {
         uint256 id
     ) external {
         require(
-            _mintApprovals[id][msg.sender] >= amount,
+            _mintApprovals[id][_msgSender()] >= amount ||
+                isWhitelisted(_msgSender()),
             "Invite: not approved to mint"
         );
         // require(mintTimer.isExpired(), "Invite: minting not open");
@@ -75,5 +72,13 @@ contract Invite1155 is ERC1155, Ownable {
         returns (uint256)
     {
         return _mintApprovals[id][spender];
+    }
+
+    function setWhitelistCheck(
+        string memory specification,
+        address tokenAddress,
+        uint256 tokenID
+    ) public virtual override onlyOwner {
+        super.setWhitelistCheck(specification, tokenAddress, tokenID);
     }
 }
