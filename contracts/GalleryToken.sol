@@ -21,8 +21,8 @@ contract Invite1155 is ERC20, Ownable {
         uint256 timeStaked;
     }
 
-    uint256 private constant PERCENTAGE_GALLERY = 500;
-    uint256 private constant PERCENTAGE_STAKEE = 500;
+    uint256 private constant PERCENTAGE_GALLERY = 100;
+    uint256 private constant PERCENTAGE_STAKEE = 100;
 
     // mapping of staker to list of erc721 balances for tokens at time of stake
     mapping(address => ERC721Balance[]) internal _erc721BalancesAtStake;
@@ -79,14 +79,14 @@ contract Invite1155 is ERC20, Ownable {
             uint256 balance = token.balanceOf(_stakee);
             if (balanceAtStart >= balance) {
                 currentStake +=
-                    currentStake *
-                    ((block.timestamp / tokenBalance.timeStaked) /
-                        (balanceAtStart / balance));
+                    currentStake /
+                    (((block.timestamp / tokenBalance.timeStaked) *
+                        (balanceAtStart / balance)) * 12);
             } else {
                 currentStake -=
-                    currentStake *
-                    ((block.timestamp / tokenBalance.timeStaked) /
-                        (balance / balanceAtStart));
+                    currentStake /
+                    (((block.timestamp / tokenBalance.timeStaked) *
+                        (balance / balanceAtStart)) * 12);
             }
         }
         uint256 fees = (currentStake / PERCENTAGE_STAKEE) +
