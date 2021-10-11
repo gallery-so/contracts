@@ -1,0 +1,16 @@
+{
+  "name": "Gallery Membership Card",
+  "external_url": "https://gallery.so",
+  "description": "This membership card provides the holder with access to Gallery and is the key to exclusive Gallery drops, community events, and early access to Gallery features.",
+  "image": "ipfs://QmP8ZhvE65cppDe2AvD9XgT9YZQdgorXfXq1TzhfK26LBw/3.mp4",
+  "attributes": [
+    {
+      "trait_type": "Tier",
+      "value": "Founding Member"
+    },
+    {
+      "trait_type": "Color",
+      "value": "Silver"
+    }
+  ]
+}

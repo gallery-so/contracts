@@ -6,10 +6,9 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
-
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract Invite1155 is ERC20, Ownable {
+contract GalleryToken is ERC20, Ownable {
     enum TokenType {
         ERC721,
         ERC1155
