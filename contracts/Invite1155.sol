@@ -8,15 +8,15 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Timers.sol";
 
 contract Invite1155 is ERC1155, Ownable, Whitelistable {
-    // using Timers for Timers.Timestamp;
-
-    // Timers.Timestamp mintTimer = Timers.Timestamp(0);
-
-    constructor(string memory baseTokenURI) ERC1155(baseTokenURI) {
-        // mintTimer.setDeadline(deadline);
-    }
+    constructor(string memory baseTokenURI) ERC1155(baseTokenURI) {}
 
     mapping(uint256 => mapping(address => uint256)) private _mintApprovals;
+
+    bool private canMint;
+
+    function setCanMint(bool _canMint) public onlyOwner {
+        canMint = _canMint;
+    }
 
     function mintToMany(
         address[] calldata _to,
@@ -35,12 +35,12 @@ contract Invite1155 is ERC1155, Ownable, Whitelistable {
         uint256 amount,
         uint256 id
     ) external {
+        require(canMint, "Minting is disabled");
         require(
             _mintApprovals[id][_msgSender()] >= amount ||
                 isWhitelisted(_msgSender()),
             "Invite: not approved to mint"
         );
-        // require(mintTimer.isExpired(), "Invite: minting not open");
         _mint(to, id, amount, bytes(""));
     }
 
@@ -76,9 +76,8 @@ contract Invite1155 is ERC1155, Ownable, Whitelistable {
 
     function setWhitelistCheck(
         string memory specification,
-        address tokenAddress,
-        uint256 tokenID
+        address tokenAddress
     ) public virtual override onlyOwner {
-        super.setWhitelistCheck(specification, tokenAddress, tokenID);
+        super.setWhitelistCheck(specification, tokenAddress);
     }
 }
