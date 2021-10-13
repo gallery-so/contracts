@@ -19,9 +19,10 @@ contract Invite1155 is ERC1155, Ownable, Whitelistable {
         symbol = _symbol;
     }
 
-    mapping(uint256 => mapping(address => uint256)) private _mintApprovals;
+    mapping(uint256 => mapping(address => bool)) private _mintApprovals;
 
     bool private canMint;
+    bool private whitelistDisabled;
 
     string public name;
     string public symbol;
@@ -41,58 +42,66 @@ contract Invite1155 is ERC1155, Ownable, Whitelistable {
         canMint = _canMint;
     }
 
-    function mintToMany(
-        address[] calldata _to,
-        uint256[] calldata _quantities,
-        uint256 _id
-    ) external onlyOwner {
+    function setWhitelistDisabled(bool _whitelistDisabled) public onlyOwner {
+        whitelistDisabled = _whitelistDisabled;
+    }
+
+    function mintToMany(address[] calldata _to, uint256 _id)
+        external
+        onlyOwner
+    {
         for (uint256 i = 0; i < _to.length; ++i) {
             address to = _to[i];
-            uint256 quantity = _quantities[i];
-            _mint(to, _id, quantity, "");
+            require(
+                balanceOf(to, _id) == 0,
+                "Invite: cannot own more than one of an Invite"
+            );
+            _mint(to, _id, 1, "");
         }
     }
 
-    function mint(
-        address to,
-        uint256 amount,
-        uint256 id
-    ) external {
+    function mint(address to, uint256 id) external {
         require(canMint, "Minting is disabled");
         require(
-            _mintApprovals[id][_msgSender()] >= amount ||
-                isWhitelisted(_msgSender()),
-            "Invite: not approved to mint"
+            balanceOf(to, id) == 0,
+            "Invite: cannot own more than one of an Invite"
         );
-        _mint(to, id, amount, bytes(""));
+        if (!whitelistDisabled) {
+            require(
+                _mintApprovals[id][_msgSender()] || isWhitelisted(_msgSender()),
+                "Invite: not approved to mint"
+            );
+        }
+        _mintApprovals[id][_msgSender()] = false;
+        _mint(to, id, 1, bytes(""));
     }
 
     function setMintApproval(
         address spender,
-        uint256 amount,
+        bool value,
         uint256 id
     ) external onlyOwner {
-        _mintApprovals[id][spender] = amount;
+        _mintApprovals[id][spender] = value;
     }
 
     function setMintApprovals(
         address[] calldata spender,
-        uint256[] calldata amounts,
+        bool[] calldata values,
         uint256 id
     ) external onlyOwner {
         require(
-            spender.length == amounts.length,
+            spender.length == values.length,
             "Invite: spender and amounts arrays must be the same length"
         );
         for (uint256 i = 0; i < spender.length; ++i) {
-            _mintApprovals[id][spender[i]] = amounts[i];
+            _mintApprovals[id][spender[i]] = values[i];
         }
     }
 
-    function getMintApproval(address spender, uint256 id)
+    function isMintApproved(address spender, uint256 id)
         external
         view
-        returns (uint256)
+        returns (bool)
     {
         return _mintApprovals[id][spender];
     }

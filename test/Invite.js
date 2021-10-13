@@ -7,7 +7,7 @@ describe("Invites", function () {
     let invite
     beforeEach(async function () {
       Invite = await ethers.getContractFactory("Invite1155")
-      invite = await Invite.deploy("asdasda")
+      invite = await Invite.deploy("asdasda", "asdasd", "AS")
     })
 
     it("Creates a type and then mints 500 SFTs", async function () {
@@ -19,7 +19,7 @@ describe("Invites", function () {
         addrs.push(signers[i % 20].address)
         amounts.push(i)
       }
-      await invite.mintToMany(1, addrs, amounts)
+      await invite.mintToMany(addrs, 1)
       const amount = await invite.balanceOf(signers[0].address, 1)
       expect(amount).to.equal(6000)
     })
