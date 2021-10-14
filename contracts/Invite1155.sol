@@ -20,9 +20,11 @@ contract Invite1155 is ERC1155, Ownable, Whitelistable {
     }
 
     mapping(uint256 => mapping(address => bool)) private _mintApprovals;
+    mapping(uint256 => uint256) private _tokenSupply;
+    mapping(uint256 => uint256) private _usedSupply;
+    mapping(uint256 => uint256) private _prices;
 
     bool private canMint;
-    bool private whitelistDisabled;
 
     string public name;
     string public symbol;
@@ -42,37 +44,57 @@ contract Invite1155 is ERC1155, Ownable, Whitelistable {
         canMint = _canMint;
     }
 
-    function setWhitelistDisabled(bool _whitelistDisabled) public onlyOwner {
-        whitelistDisabled = _whitelistDisabled;
+    function setPrice(uint256 id, uint256 price) public onlyOwner {
+        require(price > 0);
+        _prices[id] = price;
+    }
+
+    function setTotalSupply(uint256 id, uint256 supply) public onlyOwner {
+        require(supply > 0);
+        require(_tokenSupply[id] == 0);
+        require(supply <= _usedSupply[id]);
+        _tokenSupply[id] = supply;
     }
 
     function mintToMany(address[] calldata _to, uint256 _id)
         external
         onlyOwner
     {
+        require(_usedSupply[_id] + _to.length < _tokenSupply[_id]);
         for (uint256 i = 0; i < _to.length; ++i) {
             address to = _to[i];
             require(
                 balanceOf(to, _id) == 0,
                 "Invite: cannot own more than one of an Invite"
             );
+            _usedSupply[_id]++;
             _mint(to, _id, 1, "");
         }
     }
 
-    function mint(address to, uint256 id) external {
+    function mint(address to, uint256 id) external payable {
         require(canMint, "Minting is disabled");
+        require(_usedSupply[id] + 1 < _tokenSupply[id]);
         require(
             balanceOf(to, id) == 0,
             "Invite: cannot own more than one of an Invite"
         );
-        if (!whitelistDisabled) {
+        if (_prices[id] > 0) {
             require(
-                _mintApprovals[id][_msgSender()] || isWhitelisted(_msgSender()),
+                msg.value >= _prices[id] ||
+                    (_mintApprovals[id][_msgSender()] ||
+                        isWhitelisted(_msgSender(), id)),
+                "Invite: not whitelisted and msg.value is not correct price"
+            );
+        } else {
+            require(
+                _mintApprovals[id][_msgSender()] ||
+                    isWhitelisted(_msgSender(), id),
                 "Invite: not approved to mint"
             );
         }
         _mintApprovals[id][_msgSender()] = false;
+        _usedSupply[id]++;
         _mint(to, id, 1, bytes(""));
     }
 
@@ -108,9 +130,10 @@ contract Invite1155 is ERC1155, Ownable, Whitelistable {
 
     function setWhitelistCheck(
         string memory specification,
-        address tokenAddress
+        address tokenAddress,
+        uint256 _id
     ) public virtual override onlyOwner {
-        super.setWhitelistCheck(specification, tokenAddress);
+        super.setWhitelistCheck(specification, tokenAddress, _id);
     }
 
     function strConcat(

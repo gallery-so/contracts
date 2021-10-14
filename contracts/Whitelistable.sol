@@ -21,24 +21,28 @@ contract Whitelistable {
         Specification specification;
         address tokenAddress;
     }
-
-    WhitelistCheck private whitelistCheck;
+    mapping(uint256 => WhitelistCheck) private whitelist;
 
     function setWhitelistCheck(
         string memory specification,
-        address tokenAddress
+        address tokenAddress,
+        uint256 _id
     ) public virtual {
         require(tokenAddress.isContract(), "Token address must be a contract");
-        whitelistCheck.specification = specificationByValue(specification);
-        whitelistCheck.tokenAddress = tokenAddress;
+        whitelist[_id].specification = specificationByValue(specification);
+        whitelist[_id].tokenAddress = tokenAddress;
     }
 
-    function isWhitelisted(address wallet) internal view returns (bool) {
-        if (whitelistCheck.specification == Specification.ERC721) {
-            IERC721 tokenContract = IERC721(whitelistCheck.tokenAddress);
+    function isWhitelisted(address wallet, uint256 _id)
+        internal
+        view
+        returns (bool)
+    {
+        if (whitelist[_id].specification == Specification.ERC721) {
+            IERC721 tokenContract = IERC721(whitelist[_id].tokenAddress);
             return tokenContract.balanceOf(wallet) > 0;
-        } else if (whitelistCheck.specification == Specification.ERC20) {
-            IERC20 tokenContract = IERC20(whitelistCheck.tokenAddress);
+        } else if (whitelist[_id].specification == Specification.ERC20) {
+            IERC20 tokenContract = IERC20(whitelist[_id].tokenAddress);
             return tokenContract.balanceOf(wallet) > 0;
         } else {
             revert("Not possible to get here");
