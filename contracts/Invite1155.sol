@@ -52,9 +52,8 @@ contract Invite1155 is ERC1155, Ownable, Whitelistable {
     }
 
     function setTotalSupply(uint256 id, uint256 supply) public onlyOwner {
-        require(supply > 0);
-        require(_tokenSupply[id] == 0);
-        require(supply <= _usedSupply[id]);
+        require(supply > 0, "Supply must be greater than 0");
+        require(_tokenSupply[id] == 0, "Total supply already set");
         _tokenSupply[id] = supply;
     }
 

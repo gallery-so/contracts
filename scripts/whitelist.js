@@ -14,7 +14,7 @@ async function main() {
   )
   const result = await contract.setMintApprovals(
     whitelist,
-    [1, 1, 1, 1, 1, 1],
+    [true, true, true, true, true, true],
     1
   )
   console.log("Tx Hash", result.hash)

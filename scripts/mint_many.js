@@ -12,7 +12,7 @@ async function main() {
     process.env.CONTRACT_ADDRESS,
     await ethers.getSigner()
   )
-  const result = await contract.mintToMany(mintTo, [1, 1, 1, 1, 1, 1], 0)
+  const result = await contract.mintToMany(mintTo, 0)
   console.log("Tx Hash", result.hash)
 }
 
