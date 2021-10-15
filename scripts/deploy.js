@@ -1,7 +1,7 @@
 async function main() {
   const Contract = await ethers.getContractFactory("Invite1155")
   const contract = await Contract.deploy(
-    `ipfs://QmWQvHZL47DnN34AcK3ppXH1sdXAQhudevy1xk5cmTYAYW/`,
+    `ipfs://QmUUyAu9Uz5jaiEwLgm6wjhMsAMd1kvTbzb8K18184RKHK/`,
     "Gallery Membership Cards",
     "GMC"
   )
