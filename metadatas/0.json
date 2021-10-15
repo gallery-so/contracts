@@ -1,7 +1,7 @@
 {
   "name": "Core Team Card",
   "external_url": "https://gallery.so",
-  "description": "Welcome to Gallery. This membership card is your key to the Gallery platform and community.",
+  "description": "Welcome to Gallery.\nThis membership card is your key to the Gallery platform and community.\ngallery.so",
   "image": "ipfs://QmU2K3aoAWCuFYAC8cpSpmK15DUKn1pxCEAHz3v3w1CSVN/0.mp4",
   "attributes": [
     {
@@ -12,6 +12,6 @@
       "trait_type": "Card",
       "value": "Black"
     },
-    { "trait_type": "Background", "value": "Black" }
+    { "trait_type": "Background", "value": "Grey" }
   ]
 }
