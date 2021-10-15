@@ -6,9 +6,11 @@ import "./ERC1155.sol";
 import "./Whitelistable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
 
 contract Invite1155 is ERC1155, Ownable, Whitelistable {
     using Strings for uint256;
+    using Address for address payable;
 
     constructor(
         string memory tokenURI,
@@ -134,6 +136,16 @@ contract Invite1155 is ERC1155, Ownable, Whitelistable {
         uint256 _id
     ) public virtual override onlyOwner {
         super.setWhitelistCheck(specification, tokenAddress, _id);
+    }
+
+    function withdraw(uint256 amount, address payable to) external onlyOwner {
+        if (amount == 0) {
+            amount = address(this).balance;
+        }
+        if (to == address(0)) {
+            to = payable(msg.sender);
+        }
+        to.sendValue(amount);
     }
 
     function strConcat(
