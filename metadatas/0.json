@@ -1,7 +1,7 @@
 {
-  "name": "Gallery Membership Card",
+  "name": "Core Team Card",
   "external_url": "https://gallery.so",
-  "description": "This membership card provides the holder with access to Gallery and is the key to exclusive Gallery drops, community events, and early access to Gallery features.",
+  "description": "Welcome to Gallery. This membership card is your key to the Gallery platform and community.",
   "image": "ipfs://QmP8ZhvE65cppDe2AvD9XgT9YZQdgorXfXq1TzhfK26LBw/0.mp4",
   "attributes": [
     {
@@ -9,8 +9,9 @@
       "value": "Core Team"
     },
     {
-      "trait_type": "Color",
+      "trait_type": "Card",
       "value": "Black"
-    }
+    },
+    { "trait_type": "Background", "value": "Black" }
   ]
 }

@@ -1,13 +1,13 @@
 {
-  "name": "Gold Card",
+  "name": "White Card",
   "external_url": "https://gallery.so",
   "description": "Welcome to Gallery. This membership card is your key to the Gallery platform and community.",
-  "image": "ipfs://QmP8ZhvE65cppDe2AvD9XgT9YZQdgorXfXq1TzhfK26LBw/5.mp4",
+  "image": "ipfs://QmP8ZhvE65cppDe2AvD9XgT9YZQdgorXfXq1TzhfK26LBw/6.mp4",
   "attributes": [
     {
       "trait_type": "Card",
-      "value": "Gold"
+      "value": "White"
     },
-    { "trait_type": "Background", "value": "Cream" }
+    { "trait_type": "Background", "value": "White" }
   ]
 }

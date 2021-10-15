@@ -1,16 +1,13 @@
 {
-  "name": "Gallery Membership Card",
+  "name": "Investor Card",
   "external_url": "https://gallery.so",
-  "description": "This membership card provides the holder with access to Gallery and is the key to exclusive Gallery drops, community events, and early access to Gallery features.",
-  "image": "ipfs://QmP8ZhvE65cppDe2AvD9XgT9YZQdgorXfXq1TzhfK26LBw/2.mp4",
+  "description": "Welcome to Gallery. This membership card is your key to the Gallery platform and community.",
+  "image": "ipfs://QmP8ZhvE65cppDe2AvD9XgT9YZQdgorXfXq1TzhfK26LBw/1.mp4",
   "attributes": [
     {
-      "trait_type": "Tier",
-      "value": "Contributor"
+      "trait_type": "Card",
+      "value": "Black"
     },
-    {
-      "trait_type": "Color",
-      "value": "Cyan"
-    }
+    { "trait_type": "Background", "value": "Black" }
   ]
 }
