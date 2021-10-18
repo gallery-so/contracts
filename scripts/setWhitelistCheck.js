@@ -4,7 +4,11 @@ async function main() {
     process.env.CONTRACT_ADDRESS,
     await ethers.getSigner()
   )
-  const result = await contract.setTotalSupply(0, 100)
+  const result = await contract.setWhitelistCheck(
+    "ERC721",
+    process.env.TEST_CONTRACT_ADDRESS,
+    6
+  )
   console.log("Tx: ", result.hash)
 }
 

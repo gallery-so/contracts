@@ -4,11 +4,8 @@ async function main() {
     process.env.CONTRACT_ADDRESS,
     await ethers.getSigner()
   )
-  const result = await contract.mint(
-    "0x456d569592f15Af845D0dbe984C12BAB8F430e31",
-    1
-  )
-  console.log("Tx Hash", result.hash)
+  const result = await contract.setPrice(7, 1000000)
+  console.log("Tx: ", result.hash)
 }
 
 main()
