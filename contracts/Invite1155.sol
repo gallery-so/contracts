@@ -65,6 +65,10 @@ contract Invite1155 is ERC1155, Ownable, Whitelistable {
         return _tokenSupply[id];
     }
 
+    function getPrice(uint256 id) public view returns (uint256) {
+        return _prices[id];
+    }
+
     function mintToMany(address[] calldata _to, uint256 _id)
         external
         onlyOwner
