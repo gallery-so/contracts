@@ -57,6 +57,14 @@ contract Invite1155 is ERC1155, Ownable, Whitelistable {
         _tokenSupply[id] = supply;
     }
 
+    function getUsedSupply(uint256 id) public view returns (uint256) {
+        return _usedSupply[id];
+    }
+
+    function getTotalSupply(uint256 id) public view returns (uint256) {
+        return _tokenSupply[id];
+    }
+
     function mintToMany(address[] calldata _to, uint256 _id)
         external
         onlyOwner
@@ -175,25 +183,8 @@ contract Invite1155 is ERC1155, Ownable, Whitelistable {
     function strConcat(
         string memory _a,
         string memory _b,
-        string memory _c,
-        string memory _d
-    ) internal pure returns (string memory) {
-        return strConcat(_a, _b, _c, _d, "");
-    }
-
-    function strConcat(
-        string memory _a,
-        string memory _b,
         string memory _c
     ) internal pure returns (string memory) {
         return strConcat(_a, _b, _c, "", "");
-    }
-
-    function strConcat(string memory _a, string memory _b)
-        internal
-        pure
-        returns (string memory)
-    {
-        return strConcat(_a, _b, "", "", "");
     }
 }
