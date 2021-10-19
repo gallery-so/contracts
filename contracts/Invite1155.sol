@@ -43,6 +43,10 @@ contract Invite1155 is ERC1155, Ownable, Whitelistable {
         return strConcat(super.uri(it), id, ".json");
     }
 
+    function setURI(string memory _uri) public virtual onlyOwner {
+        _setURI(_uri);
+    }
+
     function setCanMint(bool _canMint) public onlyOwner {
         canMint = _canMint;
     }
