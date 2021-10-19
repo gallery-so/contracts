@@ -86,8 +86,11 @@ contract Invite1155 is ERC1155, Ownable, Whitelistable {
     }
 
     function mint(address to, uint256 id) external payable {
-        require(canMint, "Minting is disabled");
-        require(_usedSupply[id] + 1 < _tokenSupply[id]);
+        require(canMint, "Invite: minting is disabled");
+        require(
+            _usedSupply[id] + 1 < _tokenSupply[id],
+            "Invite: total supply used up"
+        );
         require(
             balanceOf(to, id) == 0,
             "Invite: cannot own more than one of an Invite"
