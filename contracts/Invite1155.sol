@@ -39,9 +39,15 @@ contract Invite1155 is ERC1155, Ownable, Whitelistable {
         uint256 _price,
         uint256 _totalSupply
     ) public onlyOwner {
-        require(_tokenTypes[_id].totalSupply == 0);
-        require(_totalSupply > 0);
-        require(bytes(_uri).length > 0);
+        require(
+            _tokenTypes[_id].totalSupply == 0,
+            "Invite: type already defined"
+        );
+        require(
+            _totalSupply > 0,
+            "Invite: must set an above zero total supply"
+        );
+        require(bytes(_uri).length > 0, "Invite: must set a URI");
         TokenType memory tokenType;
         tokenType.uri = _uri;
         tokenType.price = _price;
@@ -65,7 +71,6 @@ contract Invite1155 is ERC1155, Ownable, Whitelistable {
     }
 
     function setPrice(uint256 id, uint256 price) public onlyOwner {
-        require(price > 0);
         _tokenTypes[id].price = price;
     }
 
@@ -87,7 +92,8 @@ contract Invite1155 is ERC1155, Ownable, Whitelistable {
     {
         require(
             _tokenTypes[_id].usedSupply + _to.length <
-                _tokenTypes[_id].totalSupply
+                _tokenTypes[_id].totalSupply,
+            "Invite: total supply used up"
         );
         for (uint256 i = 0; i < _to.length; ++i) {
             address to = _to[i];
@@ -121,6 +127,10 @@ contract Invite1155 is ERC1155, Ownable, Whitelistable {
             require(
                 _mintApprovals[id][to] || isWhitelisted(to, id),
                 "Invite: not approved to mint"
+            );
+            require(
+                msg.value == 0,
+                "Invite: sent value for non-payable token ID"
             );
         }
         _mintApprovals[id][to] = false;
@@ -179,6 +189,7 @@ contract Invite1155 is ERC1155, Ownable, Whitelistable {
     }
 
     function withdraw(uint256 amount, address payable to) external onlyOwner {
+        require(address(this).balance >= amount, "Invite: not enough balance");
         if (amount == 0) {
             amount = address(this).balance;
         }
