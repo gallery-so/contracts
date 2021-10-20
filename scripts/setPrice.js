@@ -4,7 +4,11 @@ async function main() {
     process.env.CONTRACT_ADDRESS,
     await ethers.getSigner()
   )
-  const result = await contract.setPrice(7, 1000000)
+
+  const result = await contract.setPrice(
+    6,
+    ethers.BigNumber.from("200000000000000000")
+  )
   console.log("Tx: ", result.hash)
 }
 

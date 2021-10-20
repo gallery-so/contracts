@@ -1,12 +1,12 @@
 {
-  "name": "White Card",
+  "name": "Membership Card",
   "external_url": "https://gallery.so",
   "description": "Welcome to Gallery.\n\nThis membership card is your key to the Gallery platform and community.\n\n[gallery.so](https://gallery.so)",
-  "image": "ipfs://QmU2K3aoAWCuFYAC8cpSpmK15DUKn1pxCEAHz3v3w1CSVN/7.mp4",
+  "image": "ipfs://QmUxAqMXKnVQM13wDm2YjM9Cw6SzSJGK4nARWWDREm6FPk",
   "attributes": [
     {
       "trait_type": "Card",
-      "value": "White"
+      "value": "Membership"
     },
     { "trait_type": "Background", "value": "White" }
   ]

@@ -1,10 +1,6 @@
 async function main() {
   const Contract = await ethers.getContractFactory("Invite1155")
-  const contract = await Contract.deploy(
-    `ipfs://QmQzZPmcgjm7TQvqMJzxykhamHTLwd5K5WBriVDq94byFa/`,
-    "Gallery Membership Cards",
-    "GMC"
-  )
+  const contract = await Contract.deploy("Gallery Membership Cards", "GMC")
   console.log("Contract deployed to address:", contract.address)
 }
 

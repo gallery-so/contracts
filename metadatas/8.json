@@ -1,17 +1,13 @@
 {
-  "name": "Core Team Card",
+  "name": "Marfa Card",
   "external_url": "https://gallery.so",
   "description": "Welcome to Gallery.\n\nThis membership card is your key to the Gallery platform and community.\n\n[gallery.so](https://gallery.so)",
-  "image": "ipfs://QmS8CadD2FZ31dtaPN212oNeqii2awG71hLrg6RyDjPtwh",
+  "image": "ipfs://QmajmyTn5PyVaeNjR999Hf7xPSEh3sZC4JHeb16HL93x2U",
   "attributes": [
     {
-      "trait_type": "Tier",
-      "value": "Core Team"
-    },
-    {
       "trait_type": "Card",
-      "value": "Black"
+      "value": "Marfa"
     },
-    { "trait_type": "Background", "value": "Grey" }
+    { "trait_type": "Background", "value": "Desert" }
   ]
 }

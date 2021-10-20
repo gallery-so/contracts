@@ -4,10 +4,11 @@ async function main() {
     process.env.CONTRACT_ADDRESS,
     await ethers.getSigner()
   )
-  const result = await contract.setWhitelistCheck(
-    "ERC721",
-    process.env.TEST_CONTRACT_ADDRESS,
-    7
+  const result = await contract.createType(
+    8,
+    "ipfs://Qmeihcf7sCbS5C4bbyHxuE8CUNdM8ouFYHbk8M7zdTPUsA",
+    0,
+    100
   )
   console.log("Tx: ", result.hash)
 }

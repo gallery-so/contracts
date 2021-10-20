@@ -13,6 +13,7 @@ contract Whitelistable {
     using StringUtils for string;
 
     enum Specification {
+        NONE,
         ERC721,
         ERC20
     }
@@ -39,13 +40,21 @@ contract Whitelistable {
         returns (bool)
     {
         if (whitelist[_id].specification == Specification.ERC721) {
-            IERC721 tokenContract = IERC721(whitelist[_id].tokenAddress);
-            return tokenContract.balanceOf(wallet) > 0;
+            try IERC721(whitelist[_id].tokenAddress).balanceOf(wallet) {
+                return
+                    IERC721(whitelist[_id].tokenAddress).balanceOf(wallet) > 0;
+            } catch Error(string memory) {
+                return false;
+            }
         } else if (whitelist[_id].specification == Specification.ERC20) {
-            IERC20 tokenContract = IERC20(whitelist[_id].tokenAddress);
-            return tokenContract.balanceOf(wallet) > 0;
+            try IERC20(whitelist[_id].tokenAddress).balanceOf(wallet) {
+                return
+                    IERC20(whitelist[_id].tokenAddress).balanceOf(wallet) > 0;
+            } catch Error(string memory) {
+                return false;
+            }
         } else {
-            revert("Not possible to get here");
+            return false;
         }
     }
 
