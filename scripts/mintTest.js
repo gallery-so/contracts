@@ -15,7 +15,7 @@ async function main() {
   let i = 0
   for (const to of mintTo) {
     const tx = await contract.mint(to, i)
-    console.log(tx.hash)
+    console.log("Tx: ", tx.hash)
     i++
   }
 }

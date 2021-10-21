@@ -5,7 +5,7 @@ async function main() {
     await ethers.getSigner()
   )
   const result = await contract.setCanMint(true)
-  console.log("Tx Hash", result.hash)
+  console.log("Tx: ", result.hash)
 }
 
 main()

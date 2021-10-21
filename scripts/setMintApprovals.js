@@ -6,7 +6,7 @@ async function main() {
     await ethers.getSigner()
   )
   const result = await contract.setMintApprovals(whitelist, [true], 1)
-  console.log("Tx Hash", result.hash)
+  console.log("Tx: ", result.hash)
 }
 
 main()

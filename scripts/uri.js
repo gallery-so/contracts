@@ -4,7 +4,7 @@ async function main() {
     process.env.CONTRACT_ADDRESS,
     await ethers.getSigner()
   )
-  const result = await contract.uri(0)
+  const result = await contract.uri(3)
   console.log(result)
 }
 

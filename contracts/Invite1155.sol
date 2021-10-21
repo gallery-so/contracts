@@ -7,8 +7,9 @@ import "./Whitelistable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-contract Invite1155 is ERC1155, Ownable, Whitelistable {
+contract Invite1155 is ERC1155, Ownable, Whitelistable, ReentrancyGuard {
     using Strings for uint256;
     using Address for address payable;
 
@@ -107,7 +108,7 @@ contract Invite1155 is ERC1155, Ownable, Whitelistable {
         }
     }
 
-    function mint(address to, uint256 id) external payable {
+    function mint(address to, uint256 id) external payable nonReentrant {
         require(canMint, "Invite: minting is disabled");
         require(
             _tokenTypes[id].usedSupply + 1 < _tokenTypes[id].totalSupply,
@@ -148,16 +149,16 @@ contract Invite1155 is ERC1155, Ownable, Whitelistable {
     }
 
     function setMintApprovals(
-        address[] calldata spender,
+        address[] calldata spenders,
         bool[] calldata values,
         uint256 id
     ) external onlyOwner {
         require(
-            spender.length == values.length,
+            spenders.length == values.length,
             "Invite: spender and amounts arrays must be the same length"
         );
-        for (uint256 i = 0; i < spender.length; ++i) {
-            _mintApprovals[id][spender[i]] = values[i];
+        for (uint256 i = 0; i < spenders.length; ++i) {
+            _mintApprovals[id][spenders[i]] = values[i];
         }
     }
 
