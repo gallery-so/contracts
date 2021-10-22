@@ -20,6 +20,7 @@ module.exports = {
       url: API_URL,
       accounts: [`0x${PRIVATE_KEY}`],
       from: PUBLIC_KEY,
+      gasPrice: 80000000000,
     },
   },
   gasReporter: {
