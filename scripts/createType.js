@@ -5,10 +5,10 @@ async function main() {
     await ethers.getSigner()
   )
   const result = await contract.createType(
-    4,
-    "ipfs://Qmcz935fqEUd9XJCWEqckGsqTZQGJ6KrcRUyxPUhRWbhjz",
+    8,
+    "ipfs://QmTZGPjyzSd9gUr6qR2vpHcn319smbBJKvcu6QVCpgJUz8",
     0,
-    100
+    150
   )
   console.log("Tx: ", result.hash)
 }

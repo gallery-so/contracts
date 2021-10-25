@@ -3,7 +3,7 @@ async function main() {
 
   const contract = await ethers.getContractAt(
     "Invite1155",
-    process.env.CONTRACT_ADDRESS,
+    process.env.TESTNET_CONTRACT_ADDRESS,
     await ethers.getSigner()
   )
   const result = await contract.mintToMany(mintTo, 4)
