@@ -4,12 +4,7 @@ async function main() {
     process.env.CONTRACT_ADDRESS,
     await ethers.getSigner()
   )
-  const result = await contract.createType(
-    8,
-    "ipfs://QmTZGPjyzSd9gUr6qR2vpHcn319smbBJKvcu6QVCpgJUz8",
-    0,
-    150
-  )
+  const result = await contract.setMintApproval("", true, 5)
   console.log("Tx: ", result.hash)
 }
 

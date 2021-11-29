@@ -1,13 +1,11 @@
 async function main() {
-  const mintTo = []
-
   const contract = await ethers.getContractAt(
     "Invite1155",
-    process.env.TESTNET_CONTRACT_ADDRESS,
+    process.env.CONTRACT_ADDRESS,
     await ethers.getSigner()
   )
-  const result = await contract.mintToMany(mintTo, 4)
-  console.log("Tx: ", result.hash)
+  const result = await contract.uri(5)
+  console.log(result)
 }
 
 main()

@@ -1,10 +1,12 @@
+const { BigNumber } = require("@ethersproject/bignumber")
+
 async function main() {
   const contract = await ethers.getContractAt(
     "Invite1155",
-    process.env.TESTNET_CONTRACT_ADDRESS,
+    process.env.CONTRACT_ADDRESS,
     await ethers.getSigner()
   )
-  const result = await contract.setCanMint(true)
+  const result = await contract.createType(0, "", BigNumber.from(""), 500)
   console.log("Tx: ", result.hash)
 }
 
