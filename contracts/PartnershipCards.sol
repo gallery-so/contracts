@@ -28,6 +28,7 @@ contract PartnershipCards is ERC1155, Ownable, ReentrancyGuard {
     bool private canMint;
 
     mapping(uint256 => TokenType) _tokenTypes;
+    mapping(uint256 => bytes32) private _mintApprovals;
     mapping(address => mapping(uint256 => bool)) private _hasMinted;
 
     string public name;
@@ -101,13 +102,32 @@ contract PartnershipCards is ERC1155, Ownable, ReentrancyGuard {
         return _tokenTypes[id].merkleRoot;
     }
 
+    function mintToMany(address[] calldata _to, uint256 _id)
+        external
+        onlyOwner
+    {
+        require(
+            _tokenTypes[_id].usedSupply + _to.length <
+                _tokenTypes[_id].totalSupply,
+            "Invite: total supply used up"
+        );
+        for (uint256 i = 0; i < _to.length; ++i) {
+            address to = _to[i];
+            require(
+                !_hasMinted[to][_id] && balanceOf(to, _id) == 0,
+                "Invite: cannot own more than one of an Invite"
+            );
+            _tokenTypes[_id].usedSupply++;
+            _hasMinted[to][_id] = true;
+            _mint(to, _id, 1, "");
+        }
+    }
+
     function mint(
         address to,
         uint256 id,
-        address whitelistedContract,
         uint256 whitelistedTokenID,
-        uint256 whitelistedAmount,
-        uint256 whitelistedContractType,
+        bytes calldata encodedData,
         bytes32[] calldata merkleProof
     ) external payable nonReentrant {
         require(canMint, "Invite: minting is disabled");
@@ -124,43 +144,107 @@ contract PartnershipCards is ERC1155, Ownable, ReentrancyGuard {
                 msg.value >= _tokenTypes[id].price,
                 "Partnership: incorrect price"
             );
-        }
-
-        bytes memory nodePreHash = abi.encode(
-            whitelistedContract,
-            whitelistedTokenID,
-            whitelistedAmount,
-            whitelistedContractType
-        );
-        bytes32 node = keccak256(nodePreHash);
-
-        require(
-            MerkleProof.verify(merkleProof, _tokenTypes[id].merkleRoot, node),
-            "Partnership: invalid partnership"
-        );
-        if (whitelistedContractType == 0) {
+        } else {
             require(
-                IERC721(whitelistedContract).ownerOf(whitelistedTokenID) ==
-                    msg.sender,
-                "Partnership: not whitelisted"
-            );
-        } else if (whitelistedContractType == 1) {
-            require(
-                IERC1155(whitelistedContract).balanceOf(
-                    to,
-                    whitelistedTokenID
-                ) >= whitelistedAmount,
-                "Partnership: not whitelisted"
-            );
-        } else if (whitelistedContractType == 2) {
-            require(
-                IERC20(whitelistedContract).balanceOf(to) >= whitelistedAmount,
-                "Partnership: not whitelisted"
+                msg.value == 0,
+                "Invite: sent value for non-payable token ID"
             );
         }
+
+        bool isAbleToMint = MerkleProof.verify(
+            merkleProof,
+            _mintApprovals[id],
+            keccak256(abi.encodePacked(to))
+        );
+
+        if (!isAbleToMint) {
+            (
+                address whitelistedContract,
+                uint256 whitelistedTokenIDsStart,
+                uint256 whitelistedTokenIDsEnd,
+                uint256 whitelistedAmount,
+                uint256 whitelistType
+            ) = abi.decode(
+                    encodedData,
+                    (address, uint256, uint256, uint256, uint256)
+                );
+
+            require(
+                MerkleProof.verify(
+                    merkleProof,
+                    _tokenTypes[id].merkleRoot,
+                    keccak256(
+                        abi.encode(
+                            whitelistedContract,
+                            whitelistedTokenIDsStart,
+                            whitelistedTokenIDsEnd,
+                            whitelistedAmount,
+                            whitelistType
+                        )
+                    )
+                ),
+                "Partnership: invalid partnership"
+            );
+
+            if (whitelistType == 1 || whitelistType == 2) {
+                require(
+                    whitelistedTokenID <= whitelistedTokenIDsEnd &&
+                        whitelistedTokenID >= whitelistedTokenIDsStart,
+                    "Partnership: token ID out of range"
+                );
+            }
+
+            if (whitelistType == 0) {
+                require(
+                    IERC721(whitelistedContract).balanceOf(to) >=
+                        whitelistedAmount,
+                    "Partnership: not whitelisted"
+                );
+            } else if (whitelistType == 1) {
+                require(
+                    IERC721(whitelistedContract).ownerOf(whitelistedTokenID) ==
+                        to,
+                    "Partnership: not whitelisted"
+                );
+            } else if (whitelistType == 2) {
+                require(
+                    IERC1155(whitelistedContract).balanceOf(
+                        to,
+                        whitelistedTokenID
+                    ) >= whitelistedAmount,
+                    "Partnership: not whitelisted"
+                );
+            } else if (whitelistType == 3) {
+                require(
+                    IERC20(whitelistedContract).balanceOf(to) >=
+                        whitelistedAmount,
+                    "Partnership: not whitelisted"
+                );
+            }
+            isAbleToMint = true;
+        }
+
+        require(isAbleToMint, "Invite: not approved to mint");
+
         _tokenTypes[id].usedSupply++;
         _hasMinted[to][id] = true;
         _mint(to, id, 1, bytes(""));
+    }
+
+    function setMintApprovals(uint256 id, bytes32 merkleRoot)
+        external
+        onlyOwner
+    {
+        _mintApprovals[id] = merkleRoot;
+    }
+
+    function isMintApproved(
+        address spender,
+        uint256 id,
+        bytes32[] calldata merkleProof
+    ) public view returns (bool) {
+        bytes32 leaf = keccak256(abi.encodePacked(spender));
+        return MerkleProof.verify(merkleProof, _mintApprovals[id], leaf);
     }
 
     function withdraw(uint256 amount, address payable to) external onlyOwner {

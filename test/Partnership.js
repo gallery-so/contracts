@@ -18,13 +18,13 @@ describe("Partnership", function () {
     testNFT2 = await TestNFT.deploy("TestNFT2", "TST2")
 
     const abi1 = web3.eth.abi.encodeParameters(
-      ["address", "uint256", "uint256", "uint256"],
-      [testNFT.address, 0, 1, 0]
+      ["address", "uint256", "uint256", "uint256", "uint256"],
+      [testNFT.address, 0, 0, 1, 0]
     )
 
     const abi2 = web3.eth.abi.encodeParameters(
-      ["address", "uint256", "uint256", "uint256"],
-      [testNFT2.address, 0, 1, 0]
+      ["address", "uint256", "uint256", "uint256", "uint256"],
+      [testNFT2.address, 0, 5, 0, 1]
     )
 
     const elements = [abi1, abi2]
@@ -47,9 +47,14 @@ describe("Partnership", function () {
     const [john] = await ethers.getSigners()
     const resultTestMint = await testNFT.mint(john.address, 0)
     await resultTestMint.wait()
+    const encoded = web3.eth.abi.encodeParameters(
+      ["address", "uint256", "uint256", "uint256", "uint256"],
+      [testNFT.address, 0, 0, 1, 0]
+    )
+
     const resultMint = await partnership
       .connect(john)
-      .mint(john.address, 0, testNFT.address, 0, 1, 0, merkleProof)
+      .mint(john.address, 0, 0, encoded, merkleProof)
     await resultMint.wait()
     expect(await partnership.balanceOf(john.address, 0)).to.equal(1)
   })
