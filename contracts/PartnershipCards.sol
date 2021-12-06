@@ -21,7 +21,6 @@ contract PartnershipCards is ERC1155, Ownable, ReentrancyGuard {
         uint256 price;
         uint256 usedSupply;
         uint256 totalSupply;
-        uint256 inviteSupply;
         bytes32 merkleRoot;
         string uri;
     }
@@ -31,8 +30,6 @@ contract PartnershipCards is ERC1155, Ownable, ReentrancyGuard {
     mapping(uint256 => TokenType) _tokenTypes;
     mapping(uint256 => bytes32) private _mintApprovals;
     mapping(address => mapping(uint256 => bool)) private _hasMinted;
-    mapping(address => mapping(uint256 => uint256)) private _invitedAmounts;
-    mapping(uint256 => mapping(address => bool)) private _invited;
 
     string public name;
     string public symbol;
@@ -46,7 +43,6 @@ contract PartnershipCards is ERC1155, Ownable, ReentrancyGuard {
         uint256 _id,
         uint256 _price,
         uint256 _totalSupply,
-        uint256 _inviteSupply,
         bytes32 _merkleRoot,
         string memory _uri
     ) public onlyOwner {
@@ -63,7 +59,6 @@ contract PartnershipCards is ERC1155, Ownable, ReentrancyGuard {
             _price,
             0,
             _totalSupply,
-            _inviteSupply,
             _merkleRoot,
             _uri
         );
@@ -85,10 +80,6 @@ contract PartnershipCards is ERC1155, Ownable, ReentrancyGuard {
 
     function setPrice(uint256 id, uint256 price) public onlyOwner {
         _tokenTypes[id].price = price;
-    }
-
-    function setInviteSupply(uint256 id, uint256 supply) public onlyOwner {
-        _tokenTypes[id].inviteSupply = supply;
     }
 
     function setMerkleRoot(uint256 id, bytes32 merkleRoot) public onlyOwner {
@@ -167,10 +158,6 @@ contract PartnershipCards is ERC1155, Ownable, ReentrancyGuard {
         );
 
         if (!isAbleToMint) {
-            isAbleToMint = _invited[id][to];
-        }
-
-        if (!isAbleToMint) {
             (
                 address whitelistedContract,
                 uint256 whitelistedTokenIDsStart,
@@ -241,7 +228,6 @@ contract PartnershipCards is ERC1155, Ownable, ReentrancyGuard {
 
         _tokenTypes[id].usedSupply++;
         _hasMinted[to][id] = true;
-        delete _invited[id][to];
         _mint(to, id, 1, bytes(""));
     }
 
@@ -250,23 +236,6 @@ contract PartnershipCards is ERC1155, Ownable, ReentrancyGuard {
         onlyOwner
     {
         _mintApprovals[id] = merkleRoot;
-    }
-
-    function invite(address invitee, uint256 id) external nonReentrant {
-        require(
-            _tokenTypes[id].usedSupply < _tokenTypes[id].totalSupply,
-            "Partnership: total supply used up"
-        );
-        require(
-            balanceOf(invitee, id) == 0 && !_hasMinted[invitee][id],
-            "Partnership: cannot own more than one of an Invite"
-        );
-        require(
-            _invitedAmounts[msg.sender][id] < _tokenTypes[id].inviteSupply,
-            "Invite: no invites left"
-        );
-        _invitedAmounts[msg.sender][id]++;
-        _invited[id][invitee] = true;
     }
 
     function withdraw(uint256 amount, address payable to) external onlyOwner {
