@@ -11,8 +11,6 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
-import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "hardhat/console.sol";
 
@@ -43,6 +41,21 @@ contract GeneralCards is ERC1155, Ownable, ReentrancyGuard {
         string memory _symbol,
         address _tokenReceiver
     ) ERC1155("") {
+        require(
+            _tokenReceiver != address(0),
+            "General: token receiver cannot be the zero address"
+        );
+        if (Address.isContract(_tokenReceiver)) {
+            require(
+                IERC165(_tokenReceiver).supportsInterface(
+                    type(IERC1155).interfaceId
+                ) &&
+                    IERC165(_tokenReceiver).supportsInterface(
+                        type(IERC721).interfaceId
+                    ),
+                "General: token receiver must implement ERC1155 and ERC721 receivers"
+            );
+        }
         name = _name;
         symbol = _symbol;
         tokenReceiver = _tokenReceiver;
@@ -88,6 +101,21 @@ contract GeneralCards is ERC1155, Ownable, ReentrancyGuard {
     }
 
     function setTokenReceiver(address _tokenReceiver) public onlyOwner {
+        require(
+            _tokenReceiver != address(0),
+            "General: token receiver cannot be the zero address"
+        );
+        if (Address.isContract(_tokenReceiver)) {
+            require(
+                IERC165(_tokenReceiver).supportsInterface(
+                    type(IERC1155).interfaceId
+                ) &&
+                    IERC165(_tokenReceiver).supportsInterface(
+                        type(IERC721).interfaceId
+                    ),
+                "General: token receiver must implement ERC1155 and ERC721 receivers"
+            );
+        }
         tokenReceiver = _tokenReceiver;
     }
 
