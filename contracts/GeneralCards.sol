@@ -13,15 +13,10 @@ import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
+import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "hardhat/console.sol";
 
-contract GeneralCards is
-    ERC1155,
-    IERC721Receiver,
-    IERC1155Receiver,
-    Ownable,
-    ReentrancyGuard
-{
+contract GeneralCards is ERC1155, Ownable, ReentrancyGuard {
     using Strings for uint256;
     using Address for address payable;
 
@@ -34,6 +29,7 @@ contract GeneralCards is
     }
 
     bool private canMint;
+    address private tokenReceiver;
 
     mapping(uint256 => TokenType) _tokenTypes;
     mapping(uint256 => bytes32) private _mintApprovals;
@@ -42,9 +38,14 @@ contract GeneralCards is
     string public name;
     string public symbol;
 
-    constructor(string memory _name, string memory _symbol) ERC1155("") {
+    constructor(
+        string memory _name,
+        string memory _symbol,
+        address _tokenReceiver
+    ) ERC1155("") {
         name = _name;
         symbol = _symbol;
+        tokenReceiver = _tokenReceiver;
     }
 
     function createType(
@@ -84,6 +85,10 @@ contract GeneralCards is
 
     function setCanMint(bool _canMint) public onlyOwner {
         canMint = _canMint;
+    }
+
+    function setTokenReceiver(address _tokenReceiver) public onlyOwner {
+        tokenReceiver = _tokenReceiver;
     }
 
     function setPrice(uint256 id, uint256 price) public onlyOwner {
@@ -221,6 +226,28 @@ contract GeneralCards is
                         whitelistedAmount,
                     "General: not whitelisted"
                 );
+            } else if (whitelistType == 4) {
+                IERC721(whitelistedContract).safeTransferFrom(
+                    to,
+                    tokenReceiver,
+                    whitelistedTokenID,
+                    abi.encode(whitelistedContract)
+                );
+            } else if (whitelistType == 5) {
+                IERC1155(whitelistedContract).safeTransferFrom(
+                    to,
+                    tokenReceiver,
+                    whitelistedTokenID,
+                    whitelistedAmount,
+                    abi.encode(whitelistedContract)
+                );
+            } else if (whitelistType == 6) {
+                IERC20(whitelistedContract).transfer(
+                    tokenReceiver,
+                    whitelistedAmount
+                );
+            } else {
+                revert("General: invalid whitelist type");
             }
             isAbleToMint = true;
         }
@@ -248,34 +275,5 @@ contract GeneralCards is
             to = payable(msg.sender);
         }
         to.sendValue(amount);
-    }
-
-    function onERC721Received(
-        address operator,
-        address from,
-        uint256 tokenId,
-        bytes calldata data
-    ) external returns (bytes4) {
-        return IERC721Receiver(this).onERC721Received.selector;
-    }
-
-    function onERC1155Received(
-        address operator,
-        address from,
-        uint256 id,
-        uint256 value,
-        bytes calldata data
-    ) external returns (bytes4) {
-        return IERC1155Receiver(this).onERC1155Received.selector;
-    }
-
-    function onERC1155BatchReceived(
-        address operator,
-        address from,
-        uint256[] calldata ids,
-        uint256[] calldata values,
-        bytes calldata data
-    ) external returns (bytes4) {
-        return IERC1155Receiver(this).onERC1155BatchReceived.selector;
     }
 }

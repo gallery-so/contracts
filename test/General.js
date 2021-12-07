@@ -12,8 +12,9 @@ describe("General", function () {
   let incorrectMerkleProof
   let tree
   beforeEach(async function () {
+    const [signer] = await ethers.getSigners()
     General = await ethers.getContractFactory("GeneralCards")
-    general = await General.deploy("asdasd", "AS")
+    general = await General.deploy("asdasd", "AS", signer.address)
     TestNFT = await ethers.getContractFactory("TestNFT")
     testNFT = await TestNFT.deploy("TestNFT", "TST")
     testNFT2 = await TestNFT.deploy("TestNFT2", "TST2")
