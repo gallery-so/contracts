@@ -11,9 +11,17 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
+import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 import "hardhat/console.sol";
 
-contract PartnershipCards is ERC1155, Ownable, ReentrancyGuard {
+contract GeneralCards is
+    ERC1155,
+    IERC721Receiver,
+    IERC1155Receiver,
+    Ownable,
+    ReentrancyGuard
+{
     using Strings for uint256;
     using Address for address payable;
 
@@ -48,13 +56,13 @@ contract PartnershipCards is ERC1155, Ownable, ReentrancyGuard {
     ) public onlyOwner {
         require(
             _tokenTypes[_id].totalSupply == 0,
-            "Partnership: type already defined"
+            "General: type already defined"
         );
         require(
             _totalSupply > 0,
-            "Partnership: must set an above zero total supply"
+            "General: must set an above zero total supply"
         );
-        require(bytes(_uri).length > 0, "Partnership: must set a URI");
+        require(bytes(_uri).length > 0, "General: must set a URI");
         _tokenTypes[_id] = TokenType(
             _price,
             0,
@@ -109,13 +117,13 @@ contract PartnershipCards is ERC1155, Ownable, ReentrancyGuard {
         require(
             _tokenTypes[_id].usedSupply + _to.length <
                 _tokenTypes[_id].totalSupply,
-            "Invite: total supply used up"
+            "General: total supply used up"
         );
         for (uint256 i = 0; i < _to.length; ++i) {
             address to = _to[i];
             require(
                 !_hasMinted[to][_id] && balanceOf(to, _id) == 0,
-                "Invite: cannot own more than one of an Invite"
+                "General: cannot own more than one of a General Card"
             );
             _tokenTypes[_id].usedSupply++;
             _hasMinted[to][_id] = true;
@@ -130,26 +138,15 @@ contract PartnershipCards is ERC1155, Ownable, ReentrancyGuard {
         bytes calldata encodedData,
         bytes32[] calldata merkleProof
     ) external payable nonReentrant {
-        require(canMint, "Invite: minting is disabled");
+        require(canMint, "General: minting is disabled");
         require(
             _tokenTypes[id].usedSupply < _tokenTypes[id].totalSupply,
-            "Partnership: total supply used up"
+            "General: total supply used up"
         );
         require(
             balanceOf(to, id) == 0 && !_hasMinted[to][id],
-            "Partnership: cannot own more than one of an Invite"
+            "General: cannot own more than one of a General Card"
         );
-        if (_tokenTypes[id].price > 0) {
-            require(
-                msg.value >= _tokenTypes[id].price,
-                "Partnership: incorrect price"
-            );
-        } else {
-            require(
-                msg.value == 0,
-                "Invite: sent value for non-payable token ID"
-            );
-        }
 
         bool isAbleToMint = MerkleProof.verify(
             merkleProof,
@@ -157,7 +154,28 @@ contract PartnershipCards is ERC1155, Ownable, ReentrancyGuard {
             keccak256(abi.encodePacked(to))
         );
 
+        if (_tokenTypes[id].price > 0) {
+            require(
+                msg.value >= _tokenTypes[id].price || isAbleToMint,
+                "General: incorrect price or not approved"
+            );
+        } else {
+            require(
+                msg.value == 0,
+                "General: sent value for non-payable token ID"
+            );
+        }
+
         if (!isAbleToMint) {
+            require(
+                MerkleProof.verify(
+                    merkleProof,
+                    _tokenTypes[id].merkleRoot,
+                    keccak256(encodedData)
+                ),
+                "General: invalid card data"
+            );
+
             (
                 address whitelistedContract,
                 uint256 whitelistedTokenIDsStart,
@@ -169,28 +187,11 @@ contract PartnershipCards is ERC1155, Ownable, ReentrancyGuard {
                     (address, uint256, uint256, uint256, uint256)
                 );
 
-            require(
-                MerkleProof.verify(
-                    merkleProof,
-                    _tokenTypes[id].merkleRoot,
-                    keccak256(
-                        abi.encode(
-                            whitelistedContract,
-                            whitelistedTokenIDsStart,
-                            whitelistedTokenIDsEnd,
-                            whitelistedAmount,
-                            whitelistType
-                        )
-                    )
-                ),
-                "Partnership: invalid partnership"
-            );
-
             if (whitelistType == 1 || whitelistType == 2) {
                 require(
                     whitelistedTokenID <= whitelistedTokenIDsEnd &&
                         whitelistedTokenID >= whitelistedTokenIDsStart,
-                    "Partnership: token ID out of range"
+                    "General: token ID out of range"
                 );
             }
 
@@ -198,13 +199,13 @@ contract PartnershipCards is ERC1155, Ownable, ReentrancyGuard {
                 require(
                     IERC721(whitelistedContract).balanceOf(to) >=
                         whitelistedAmount,
-                    "Partnership: not whitelisted"
+                    "General: not whitelisted"
                 );
             } else if (whitelistType == 1) {
                 require(
                     IERC721(whitelistedContract).ownerOf(whitelistedTokenID) ==
                         to,
-                    "Partnership: not whitelisted"
+                    "General: not whitelisted"
                 );
             } else if (whitelistType == 2) {
                 require(
@@ -212,19 +213,19 @@ contract PartnershipCards is ERC1155, Ownable, ReentrancyGuard {
                         to,
                         whitelistedTokenID
                     ) >= whitelistedAmount,
-                    "Partnership: not whitelisted"
+                    "General: not whitelisted"
                 );
             } else if (whitelistType == 3) {
                 require(
                     IERC20(whitelistedContract).balanceOf(to) >=
                         whitelistedAmount,
-                    "Partnership: not whitelisted"
+                    "General: not whitelisted"
                 );
             }
             isAbleToMint = true;
         }
 
-        require(isAbleToMint, "Invite: not approved to mint");
+        require(isAbleToMint, "General: not approved to mint");
 
         _tokenTypes[id].usedSupply++;
         _hasMinted[to][id] = true;
@@ -239,10 +240,7 @@ contract PartnershipCards is ERC1155, Ownable, ReentrancyGuard {
     }
 
     function withdraw(uint256 amount, address payable to) external onlyOwner {
-        require(
-            address(this).balance >= amount,
-            "Partnership: not enough balance"
-        );
+        require(address(this).balance >= amount, "General: not enough balance");
         if (amount == 0) {
             amount = address(this).balance;
         }
@@ -250,5 +248,34 @@ contract PartnershipCards is ERC1155, Ownable, ReentrancyGuard {
             to = payable(msg.sender);
         }
         to.sendValue(amount);
+    }
+
+    function onERC721Received(
+        address operator,
+        address from,
+        uint256 tokenId,
+        bytes calldata data
+    ) external returns (bytes4) {
+        return IERC721Receiver(this).onERC721Received.selector;
+    }
+
+    function onERC1155Received(
+        address operator,
+        address from,
+        uint256 id,
+        uint256 value,
+        bytes calldata data
+    ) external returns (bytes4) {
+        return IERC1155Receiver(this).onERC1155Received.selector;
+    }
+
+    function onERC1155BatchReceived(
+        address operator,
+        address from,
+        uint256[] calldata ids,
+        uint256[] calldata values,
+        bytes calldata data
+    ) external returns (bytes4) {
+        return IERC1155Receiver(this).onERC1155BatchReceived.selector;
     }
 }
