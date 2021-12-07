@@ -86,7 +86,7 @@ describe("General", function () {
     ).to.be.revertedWith("General: invalid card data")
   })
 
-  it("Fails to mint 2 partnerships of the same type to the same address", async function () {
+  it("Fails to mint 2 general cards of the same type to the same address", async function () {
     const signers = await ethers.getSigners()
 
     const resultTestMint = await testNFT.mint(signers[0].address, 0)
