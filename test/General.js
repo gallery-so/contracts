@@ -9,10 +9,11 @@ describe("General", function () {
   let testNFT
   let testNFT2
   let merkleProof
+  let merkleProofTake
   let incorrectMerkleProof
   let tree
   beforeEach(async function () {
-    const [signer] = await ethers.getSigners()
+    const [_, signer] = await ethers.getSigners()
     General = await ethers.getContractFactory("GeneralCards")
     general = await General.deploy("asdasd", "AS", signer.address)
     TestNFT = await ethers.getContractFactory("TestNFT")
@@ -28,12 +29,17 @@ describe("General", function () {
       ["address", "uint256", "uint256", "uint256", "uint256"],
       [testNFT2.address, 0, 5, 0, 1]
     )
+    const abi3 = web3.eth.abi.encodeParameters(
+      ["address", "uint256", "uint256", "uint256", "uint256"],
+      [testNFT2.address, 0, 5, 0, 4]
+    )
 
-    const elements = [abi1, abi2]
+    const elements = [abi1, abi2, abi3]
     tree = new MerkleTree(elements)
 
     const root = tree.getHexRoot()
     merkleProof = tree.getHexProof(elements[0])
+    merkleProofTake = tree.getHexProof(elements[2])
     incorrectMerkleProof = tree.getHexProof(elements[1])
 
     general.createType(0, 0, 100, root, "URI 0")
@@ -68,6 +74,28 @@ describe("General", function () {
       .mint(john.address, 0, 0, encoded, merkleProof)
     await resultMint.wait()
     expect(await general.balanceOf(john.address, 0)).to.equal(1)
+  })
+
+  it("Should mint a token and take ERC721 from signer", async function () {
+    const [signer] = await ethers.getSigners()
+    const resultTestMint = await testNFT2.mint(signer.address, 0)
+    await resultTestMint.wait()
+    const encoded = web3.eth.abi.encodeParameters(
+      ["address", "uint256", "uint256", "uint256", "uint256"],
+      [testNFT2.address, 0, 5, 0, 4]
+    )
+
+    const resultApprove = await testNFT2
+      .connect(signer)
+      .approve(general.address, 0)
+    await resultApprove.wait()
+
+    const resultMint = await general
+      .connect(signer)
+      .mint(signer.address, 0, 0, encoded, merkleProofTake)
+    await resultMint.wait()
+    expect(await general.balanceOf(signer.address, 0)).to.equal(1)
+    expect(await testNFT2.balanceOf(signer.address)).to.equal(0)
   })
 
   it("Fails to mint because wrong merkle proof", async function () {
