@@ -1,6 +1,6 @@
 const { expect } = require("chai")
 const { ethers } = require("hardhat")
-const { MerkleTree } = require("./helpers/merkleTree.js")
+const { MerkleTree } = require("../scripts/helpers/merkleTree.js")
 
 describe("General", function () {
   let General
