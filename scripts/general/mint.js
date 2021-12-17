@@ -55,7 +55,7 @@ async function main() {
 
   const proof = tree.getHexProof(abi)
   console.log(proof)
-  const result = await contract.mint(signer.address, 0, 0, abi, proof)
+  const result = await contract.mint("", 0, 0, abi, proof)
   console.log("Tx: ", result.hash)
 }
 
