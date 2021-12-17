@@ -2,7 +2,6 @@ const { BigNumber } = require("@ethersproject/bignumber")
 const { MerkleTree } = require("../helpers/merkleTree")
 
 async function main() {
-  const [signer] = ethers.getSigners()
   const contract = await ethers.getContractAt(
     "GeneralCards",
     process.env.TESTNET_GENERAL_CONTRACT_ADDRESS,
@@ -42,12 +41,22 @@ async function main() {
     [process.env.TEST_CONTRACT_ADDRESS, 0, 0, 1, 0]
   )
 
-  const elements = [abi]
+  console.log(abi)
+
+  const abi2 = web3.eth.abi.encodeParameters(
+    ["address", "uint256", "uint256", "uint256", "uint256"],
+    [process.env.TEST_CONTRACT_ADDRESS, 0, 10, 1, 1]
+  )
+
+  console.log(abi2)
+
+  const elements = [abi, abi2]
   const tree = new MerkleTree(elements)
 
-  const proof = tree.getHexProof(elements[0])
-  const result = await contract.mint(signer.address, 0, 0, abi, proof)
-  console.log("Tx: ", result.hash)
+  const proof = tree.getHexProof(abi)
+  console.log(proof)
+  // const result = await contract.mint(signer.address, 0, 0, abi, proof)
+  // console.log("Tx: ", result.hash)
 }
 
 main()

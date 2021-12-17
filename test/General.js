@@ -38,9 +38,13 @@ describe("General", function () {
     tree = new MerkleTree(elements)
 
     const root = tree.getHexRoot()
+    console.log("Root: ", root)
     merkleProof = tree.getHexProof(elements[0])
+    console.log("Merkle Proof: ", merkleProof)
     merkleProofTake = tree.getHexProof(elements[2])
+    console.log("Merkle Proof Take: ", merkleProofTake)
     incorrectMerkleProof = tree.getHexProof(elements[1])
+    console.log("Incorrect Merkle Proof: ", incorrectMerkleProof)
 
     general.createType(0, 0, 100, root, "URI 0")
     general.createType(1, 0, 1, root, "URI 1")

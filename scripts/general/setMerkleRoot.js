@@ -50,7 +50,7 @@ async function main() {
 
   const root = tree.getHexRoot()
   console.log(root)
-  const result = await contract.createType(0, 0, 500, root, "test uri")
+  const result = await contract.setMerkleRoot(0, root)
   console.log("Tx: ", result.hash)
 }
 
