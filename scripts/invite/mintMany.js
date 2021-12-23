@@ -1,5 +1,5 @@
 async function main() {
-  let mintTo = ["0x70D04384b5c3a466EC4D8CFB8213Efc31C6a9D15"]
+  let mintTo = [""]
 
   // mintTo = mintTo.filter(onlyUnique)
 
@@ -20,10 +20,10 @@ async function main() {
   console.log(`minting to ${mintTo.length} addresses`)
   const contract = await ethers.getContractAt(
     "Invite1155",
-    process.env.TESTNET_CONTRACT_ADDRESS,
+    process.env.CONTRACT_ADDRESS,
     await ethers.getSigner()
   )
-  const result = await contract.mintToMany(mintTo, 5)
+  const result = await contract.mintToMany(mintTo, 1)
   // console.log(result.toNumber())
   console.log("Tx: ", result.hash)
 }

@@ -181,11 +181,12 @@ contract GeneralCards is ERC1155, Ownable, ReentrancyGuard {
             "General: cannot own more than one of a General Card"
         );
 
-        bool isAbleToMint = MerkleProof.verify(
-            merkleProof,
-            _mintApprovals[id],
-            keccak256(abi.encodePacked(to))
-        );
+        bool isAbleToMint = _tokenTypes[id].merkleRoot == bytes32(0) ||
+            MerkleProof.verify(
+                merkleProof,
+                _mintApprovals[id],
+                keccak256(abi.encodePacked(to))
+            );
 
         if (_tokenTypes[id].price > 0) {
             require(
