@@ -22,12 +22,10 @@ contract GeneralCards is ERC1155, Ownable, ReentrancyGuard {
         uint256 price;
         uint256 usedSupply;
         uint256 totalSupply;
-        bytes32 merkleRoot;
         string uri;
     }
 
     bool private canMint;
-    address private tokenReceiver;
 
     mapping(uint256 => TokenType) _tokenTypes;
     mapping(uint256 => bytes32) private _mintApprovals;
@@ -36,36 +34,15 @@ contract GeneralCards is ERC1155, Ownable, ReentrancyGuard {
     string public name;
     string public symbol;
 
-    constructor(
-        string memory _name,
-        string memory _symbol,
-        address _tokenReceiver
-    ) ERC1155("") {
-        require(
-            _tokenReceiver != address(0),
-            "General: token receiver cannot be the zero address"
-        );
-        if (Address.isContract(_tokenReceiver)) {
-            require(
-                IERC165(_tokenReceiver).supportsInterface(
-                    type(IERC1155).interfaceId
-                ) &&
-                    IERC165(_tokenReceiver).supportsInterface(
-                        type(IERC721).interfaceId
-                    ),
-                "General: token receiver must implement ERC1155 and ERC721 receivers"
-            );
-        }
+    constructor(string memory _name, string memory _symbol) ERC1155("") {
         name = _name;
         symbol = _symbol;
-        tokenReceiver = _tokenReceiver;
     }
 
     function createType(
         uint256 _id,
         uint256 _price,
         uint256 _totalSupply,
-        bytes32 _merkleRoot,
         string memory _uri
     ) public onlyOwner {
         require(
@@ -77,13 +54,7 @@ contract GeneralCards is ERC1155, Ownable, ReentrancyGuard {
             "General: must set an above zero total supply"
         );
         require(bytes(_uri).length > 0, "General: must set a URI");
-        _tokenTypes[_id] = TokenType(
-            _price,
-            0,
-            _totalSupply,
-            _merkleRoot,
-            _uri
-        );
+        _tokenTypes[_id] = TokenType(_price, 0, _totalSupply, _uri);
     }
 
     function uri(uint256 it)
@@ -100,31 +71,8 @@ contract GeneralCards is ERC1155, Ownable, ReentrancyGuard {
         canMint = _canMint;
     }
 
-    function setTokenReceiver(address _tokenReceiver) public onlyOwner {
-        require(
-            _tokenReceiver != address(0),
-            "General: token receiver cannot be the zero address"
-        );
-        if (Address.isContract(_tokenReceiver)) {
-            require(
-                IERC165(_tokenReceiver).supportsInterface(
-                    type(IERC1155).interfaceId
-                ) &&
-                    IERC165(_tokenReceiver).supportsInterface(
-                        type(IERC721).interfaceId
-                    ),
-                "General: token receiver must implement ERC1155 and ERC721 receivers"
-            );
-        }
-        tokenReceiver = _tokenReceiver;
-    }
-
     function setPrice(uint256 id, uint256 price) public onlyOwner {
         _tokenTypes[id].price = price;
-    }
-
-    function setMerkleRoot(uint256 id, bytes32 merkleRoot) public onlyOwner {
-        _tokenTypes[id].merkleRoot = merkleRoot;
     }
 
     function getUsedSupply(uint256 id) public view returns (uint256) {
@@ -137,10 +85,6 @@ contract GeneralCards is ERC1155, Ownable, ReentrancyGuard {
 
     function getPrice(uint256 id) public view returns (uint256) {
         return _tokenTypes[id].price;
-    }
-
-    function getMerkleRoot(uint256 id) public view returns (bytes32) {
-        return _tokenTypes[id].merkleRoot;
     }
 
     function mintToMany(address[] calldata _to, uint256 _id)
@@ -167,13 +111,12 @@ contract GeneralCards is ERC1155, Ownable, ReentrancyGuard {
     function mint(
         address to,
         uint256 id,
-        uint256 whitelistedTokenID,
-        bytes calldata encodedData,
         bytes32[] calldata merkleProof
     ) external payable nonReentrant {
         require(canMint, "General: minting is disabled");
         require(
-            _tokenTypes[id].usedSupply < _tokenTypes[id].totalSupply,
+            _tokenTypes[id].usedSupply < _tokenTypes[id].totalSupply ||
+                _mintApprovals[id] == bytes32(0),
             "General: total supply used up"
         );
         require(
@@ -181,16 +124,16 @@ contract GeneralCards is ERC1155, Ownable, ReentrancyGuard {
             "General: cannot own more than one of a General Card"
         );
 
-        bool isAbleToMint = _tokenTypes[id].merkleRoot == bytes32(0) ||
-            MerkleProof.verify(
-                merkleProof,
-                _mintApprovals[id],
-                keccak256(abi.encodePacked(to))
-            );
+        bool whitelisted = MerkleProof.verify(
+            merkleProof,
+            _mintApprovals[id],
+            keccak256(abi.encodePacked(to))
+        );
+        bool isAbleToMint = _mintApprovals[id] == bytes32(0) || whitelisted;
 
         if (_tokenTypes[id].price > 0) {
             require(
-                msg.value >= _tokenTypes[id].price || isAbleToMint,
+                msg.value >= _tokenTypes[id].price || whitelisted,
                 "General: incorrect price or not approved"
             );
         } else {
@@ -198,87 +141,6 @@ contract GeneralCards is ERC1155, Ownable, ReentrancyGuard {
                 msg.value == 0,
                 "General: sent value for non-payable token ID"
             );
-        }
-
-        if (!isAbleToMint) {
-            require(
-                MerkleProof.verify(
-                    merkleProof,
-                    _tokenTypes[id].merkleRoot,
-                    keccak256(encodedData)
-                ),
-                "General: invalid card data"
-            );
-
-            (
-                address whitelistedContract,
-                uint256 whitelistedTokenIDsStart,
-                uint256 whitelistedTokenIDsEnd,
-                uint256 whitelistedAmount,
-                uint256 whitelistType
-            ) = abi.decode(
-                    encodedData,
-                    (address, uint256, uint256, uint256, uint256)
-                );
-
-            if (whitelistType == 1 || whitelistType == 2) {
-                require(
-                    whitelistedTokenID <= whitelistedTokenIDsEnd &&
-                        whitelistedTokenID >= whitelistedTokenIDsStart,
-                    "General: token ID out of range"
-                );
-            }
-
-            if (whitelistType == 0) {
-                require(
-                    IERC721(whitelistedContract).balanceOf(to) >=
-                        whitelistedAmount,
-                    "General: not whitelisted"
-                );
-            } else if (whitelistType == 1) {
-                require(
-                    IERC721(whitelistedContract).ownerOf(whitelistedTokenID) ==
-                        to,
-                    "General: not whitelisted"
-                );
-            } else if (whitelistType == 2) {
-                require(
-                    IERC1155(whitelistedContract).balanceOf(
-                        to,
-                        whitelistedTokenID
-                    ) >= whitelistedAmount,
-                    "General: not whitelisted"
-                );
-            } else if (whitelistType == 3) {
-                require(
-                    IERC20(whitelistedContract).balanceOf(to) >=
-                        whitelistedAmount,
-                    "General: not whitelisted"
-                );
-            } else if (whitelistType == 4) {
-                IERC721(whitelistedContract).safeTransferFrom(
-                    to,
-                    tokenReceiver,
-                    whitelistedTokenID,
-                    abi.encode(whitelistedContract)
-                );
-            } else if (whitelistType == 5) {
-                IERC1155(whitelistedContract).safeTransferFrom(
-                    to,
-                    tokenReceiver,
-                    whitelistedTokenID,
-                    whitelistedAmount,
-                    abi.encode(whitelistedContract)
-                );
-            } else if (whitelistType == 6) {
-                IERC20(whitelistedContract).transfer(
-                    tokenReceiver,
-                    whitelistedAmount
-                );
-            } else {
-                revert("General: invalid whitelist type");
-            }
-            isAbleToMint = true;
         }
 
         require(isAbleToMint, "General: not approved to mint");

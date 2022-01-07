@@ -8,7 +8,13 @@ async function main() {
     await ethers.getSigner()
   )
 
-  const result = await contract.createType(0, 0, 500, "test uri")
+  const elements = [
+    /* whitelisted addresses */
+  ]
+  const tree = new MerkleTree(elements)
+
+  const root = tree.getHexRoot()
+  const result = await contract.setMintApprovals(0, root)
   console.log("Tx: ", result.hash)
 }
 
