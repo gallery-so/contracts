@@ -129,6 +129,7 @@ contract GeneralCards is ERC1155, Ownable, ReentrancyGuard {
             _mintApprovals[id],
             keccak256(abi.encodePacked(to))
         );
+
         bool isAbleToMint = _mintApprovals[id] == bytes32(0) || whitelisted;
 
         if (_tokenTypes[id].price > 0) {
@@ -136,6 +137,7 @@ contract GeneralCards is ERC1155, Ownable, ReentrancyGuard {
                 msg.value >= _tokenTypes[id].price || whitelisted,
                 "General: incorrect price or not approved"
             );
+            isAbleToMint = true;
         } else {
             require(
                 msg.value == 0,

@@ -5,132 +5,57 @@ const { MerkleTree } = require("../scripts/helpers/merkleTree.js")
 describe("General", function () {
   let General
   let general
-  let TestNFT
-  let testNFT
-  let testNFT2
-  let merkleProof
-  let merkleProofTake
-  let incorrectMerkleProof
   let tree
+  let proof
+  let incorrectProof
   beforeEach(async function () {
-    const [_, signer] = await ethers.getSigners()
+    const [signer1, signer2] = await ethers.getSigners()
     General = await ethers.getContractFactory("GeneralCards")
-    general = await General.deploy("asdasd", "AS", signer.address)
-    TestNFT = await ethers.getContractFactory("TestNFT")
-    testNFT = await TestNFT.deploy("TestNFT", "TST")
-    testNFT2 = await TestNFT.deploy("TestNFT2", "TST2")
+    general = await General.deploy("asdasd", "AS")
 
-    const abi1 = web3.eth.abi.encodeParameters(
-      ["address", "uint256", "uint256", "uint256", "uint256"],
-      [testNFT.address, 0, 0, 1, 0]
-    )
-
-    const abi2 = web3.eth.abi.encodeParameters(
-      ["address", "uint256", "uint256", "uint256", "uint256"],
-      [testNFT2.address, 0, 5, 0, 1]
-    )
-    const abi3 = web3.eth.abi.encodeParameters(
-      ["address", "uint256", "uint256", "uint256", "uint256"],
-      [testNFT2.address, 0, 5, 0, 4]
-    )
-
-    const elements = [abi1, abi2, abi3]
+    const elements = [signer1.address, signer2.address]
     tree = new MerkleTree(elements)
 
-    const root = tree.getHexRoot()
-    console.log("Root: ", root)
-    merkleProof = tree.getHexProof(elements[0])
-    console.log("Merkle Proof: ", merkleProof)
-    merkleProofTake = tree.getHexProof(elements[2])
-    console.log("Merkle Proof Take: ", merkleProofTake)
-    incorrectMerkleProof = tree.getHexProof(elements[1])
-    console.log("Incorrect Merkle Proof: ", incorrectMerkleProof)
+    proof = tree.getHexProof(signer1.address)
+    incorrectProof = tree.getHexProof(signer2.address)
 
-    general.createType(0, 0, 100, root, "URI 0")
-    general.createType(1, 0, 1, root, "URI 1")
+    general.createType(0, 0, 100, "URI 0")
+    general.createType(1, 0, 1, "URI 1")
     general.createType(
       2,
       ethers.BigNumber.from("100000000000000000"),
       100,
-      root,
       "URI 2"
     )
+
+    general.setMintApprovals(0, tree.getHexRoot())
+    general.setMintApprovals(1, tree.getHexRoot())
+    general.setMintApprovals(2, tree.getHexRoot())
 
     general.setCanMint(true)
   })
 
-  it("Ensures root is correct", async function () {
-    const root = await general.getMerkleRoot(0)
-    expect(root).to.equal(tree.getHexRoot())
-  })
-
   it("Should mint a token", async function () {
     const [john] = await ethers.getSigners()
-    const resultTestMint = await testNFT.mint(john.address, 0)
-    await resultTestMint.wait()
-    const encoded = web3.eth.abi.encodeParameters(
-      ["address", "uint256", "uint256", "uint256", "uint256"],
-      [testNFT.address, 0, 0, 1, 0]
-    )
-
-    const resultMint = await general
-      .connect(john)
-      .mint(john.address, 0, 0, encoded, merkleProof)
+    const resultMint = await general.connect(john).mint(john.address, 0, proof)
     await resultMint.wait()
     expect(await general.balanceOf(john.address, 0)).to.equal(1)
   })
 
-  it("Should mint a token and take ERC721 from signer", async function () {
-    const [signer] = await ethers.getSigners()
-    const resultTestMint = await testNFT2.mint(signer.address, 0)
-    await resultTestMint.wait()
-    const encoded = web3.eth.abi.encodeParameters(
-      ["address", "uint256", "uint256", "uint256", "uint256"],
-      [testNFT2.address, 0, 5, 0, 4]
-    )
-
-    const resultApprove = await testNFT2
-      .connect(signer)
-      .approve(general.address, 0)
-    await resultApprove.wait()
-
-    const resultMint = await general
-      .connect(signer)
-      .mint(signer.address, 0, 0, encoded, merkleProofTake)
-    await resultMint.wait()
-    expect(await general.balanceOf(signer.address, 0)).to.equal(1)
-    expect(await testNFT2.balanceOf(signer.address)).to.equal(0)
-  })
-
   it("Fails to mint because wrong merkle proof", async function () {
     const [john] = await ethers.getSigners()
-    const resultTestMint = await testNFT.mint(john.address, 0)
-    await resultTestMint.wait()
-    const encoded = web3.eth.abi.encodeParameters(
-      ["address", "uint256", "uint256", "uint256", "uint256"],
-      [testNFT.address, 0, 0, 1, 0]
-    )
 
     await expect(
-      general
-        .connect(john)
-        .mint(john.address, 0, 0, encoded, incorrectMerkleProof)
-    ).to.be.revertedWith("General: invalid card data")
+      general.connect(john).mint(john.address, 0, incorrectProof)
+    ).to.be.revertedWith("General: not approved to mint")
   })
 
   it("Fails to mint 2 general cards of the same type to the same address", async function () {
     const signers = await ethers.getSigners()
 
-    const resultTestMint = await testNFT.mint(signers[0].address, 0)
-    await resultTestMint.wait()
-    const encoded = web3.eth.abi.encodeParameters(
-      ["address", "uint256", "uint256", "uint256", "uint256"],
-      [testNFT.address, 0, 0, 1, 0]
-    )
-
     const resultMint = await general
       .connect(signers[0])
-      .mint(signers[0].address, 0, 0, encoded, merkleProof)
+      .mint(signers[0].address, 0, proof)
     await resultMint.wait()
 
     let addrs = [signers[0].address, signers[0].address]
@@ -192,14 +117,8 @@ describe("General", function () {
   it("Approved address fails to mint token by sending price to non-priced token", async function () {
     const [signer] = await ethers.getSigners()
 
-    const elements = [signer.address]
-    const tree = new MerkleTree(elements)
-    const root = tree.getHexRoot()
-    await general.setMintApprovals(0, root)
-    const proof = tree.getHexProof(elements[0])
-
     await expect(
-      general.mint(signer.address, 0, 0, Buffer.from(""), proof, {
+      general.mint(signer.address, 0, proof, {
         from: signer.address,
         value: ethers.utils.parseEther("0.1"),
       })
@@ -209,16 +128,10 @@ describe("General", function () {
   describe("Priced Token", async function () {
     it("Mints 1 token ID with price of .1 ETH", async function () {
       const [signer] = await ethers.getSigners()
-      const resultTestMint = await testNFT.mint(signer.address, 0)
-      await resultTestMint.wait()
-      const encoded = web3.eth.abi.encodeParameters(
-        ["address", "uint256", "uint256", "uint256", "uint256"],
-        [testNFT.address, 0, 0, 1, 0]
-      )
 
       const resultMint = await general
         .connect(signer)
-        .mint(signer.address, 2, 0, encoded, merkleProof, {
+        .mint(signer.address, 2, incorrectProof, {
           value: ethers.utils.parseEther("0.1"),
         })
       await resultMint.wait()
@@ -228,16 +141,9 @@ describe("General", function () {
     it("Mints 1 token ID with price of .1 ETH but sends extra ETH", async function () {
       const [signer] = await ethers.getSigners()
 
-      const resultTestMint = await testNFT.mint(signer.address, 0)
-      await resultTestMint.wait()
-      const encoded = web3.eth.abi.encodeParameters(
-        ["address", "uint256", "uint256", "uint256", "uint256"],
-        [testNFT.address, 0, 0, 1, 0]
-      )
-
       const resultMint = await general
         .connect(signer)
-        .mint(signer.address, 2, 0, encoded, merkleProof, {
+        .mint(signer.address, 2, incorrectProof, {
           value: ethers.utils.parseEther("0.2"),
         })
       await resultMint.wait()
@@ -248,15 +154,8 @@ describe("General", function () {
     it("Fails to mint 1 token ID with incorrect price", async function () {
       const [signer] = await ethers.getSigners()
 
-      const resultTestMint = await testNFT.mint(signer.address, 0)
-      await resultTestMint.wait()
-      const encoded = web3.eth.abi.encodeParameters(
-        ["address", "uint256", "uint256", "uint256", "uint256"],
-        [testNFT.address, 0, 0, 1, 0]
-      )
-
       await expect(
-        general.mint(signer.address, 2, 0, encoded, merkleProof, {
+        general.mint(signer.address, 2, incorrectProof, {
           value: ethers.utils.parseEther("0.01"),
         })
       ).to.be.revertedWith("General: incorrect price or not approved")
@@ -264,60 +163,37 @@ describe("General", function () {
     it("Fails to mint 1 token ID with correct price but minting disabled", async function () {
       const [signer] = await ethers.getSigners()
       await general.setCanMint(false)
-      const resultTestMint = await testNFT.mint(signer.address, 0)
-      await resultTestMint.wait()
-      const encoded = web3.eth.abi.encodeParameters(
-        ["address", "uint256", "uint256", "uint256", "uint256"],
-        [testNFT.address, 0, 0, 1, 0]
-      )
+
       await expect(
-        general.mint(signer.address, 2, 0, encoded, merkleProof, {
+        general.mint(signer.address, 2, incorrectProof, {
           value: ethers.utils.parseEther("0.1"),
         })
       ).to.be.revertedWith("General: minting is disabled")
     })
     it("Fails to mint one token with no price set", async function () {
       const [signer] = await ethers.getSigners()
-      const resultTestMint = await testNFT.mint(signer.address, 0)
-      await resultTestMint.wait()
-      const encoded = web3.eth.abi.encodeParameters(
-        ["address", "uint256", "uint256", "uint256", "uint256"],
-        [testNFT.address, 0, 0, 1, 0]
-      )
 
       await expect(
-        general.mint(signer.address, 2, 0, encoded, merkleProof)
+        general.mint(signer.address, 2, incorrectProof)
       ).to.be.revertedWith("General: incorrect price or not approved")
     })
 
     it("Bypasses price by being whitelisted", async function () {
       const [signer] = await ethers.getSigners()
 
-      const elements = [signer.address]
-      const tree = new MerkleTree(elements)
-      const root = tree.getHexRoot()
-      await general.setMintApprovals(2, root)
-      const proof = tree.getHexProof(elements[0])
-
       const resultMint = await general
         .connect(signer)
-        .mint(signer.address, 2, 0, Buffer.from(""), proof)
+        .mint(signer.address, 2, proof)
       await resultMint.wait()
       expect(await general.balanceOf(signer.address, 2)).to.equal(1)
     })
     it("Successfully withdraws ETH from purchased tokens", async function () {
       const [signer, taker] = await ethers.getSigners()
-      const curBal = await ethers.provider.getBalance(signer.address)
-      const resultTestMint = await testNFT.mint(signer.address, 0)
-      await resultTestMint.wait()
-      const encoded = web3.eth.abi.encodeParameters(
-        ["address", "uint256", "uint256", "uint256", "uint256"],
-        [testNFT.address, 0, 0, 1, 0]
-      )
+      const curBal = await ethers.provider.getBalance(taker.address)
 
       const resultMint = await general
         .connect(signer)
-        .mint(signer.address, 2, 0, encoded, merkleProof, {
+        .mint(signer.address, 2, incorrectProof, {
           value: ethers.utils.parseEther("0.1"),
         })
       await resultMint.wait()
@@ -329,16 +205,10 @@ describe("General", function () {
     })
     it("Unsuccessfully withdraws ETH from purchased tokens because not owner", async function () {
       const [signer, taker] = await ethers.getSigners()
-      const resultTestMint = await testNFT.mint(signer.address, 0)
-      await resultTestMint.wait()
-      const encoded = web3.eth.abi.encodeParameters(
-        ["address", "uint256", "uint256", "uint256", "uint256"],
-        [testNFT.address, 0, 0, 1, 0]
-      )
 
       const resultMint = await general
         .connect(signer)
-        .mint(signer.address, 2, 0, encoded, merkleProof, {
+        .mint(signer.address, 2, incorrectProof, {
           value: ethers.utils.parseEther("0.1"),
         })
       await resultMint.wait()
