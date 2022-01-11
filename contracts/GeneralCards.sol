@@ -128,7 +128,7 @@ contract GeneralCards is ERC1155, IERC2981, Ownable, ReentrancyGuard {
         bool whitelisted = MerkleProof.verify(
             merkleProof,
             _mintApprovals[id],
-            keccak256(abi.encodePacked(to))
+            keccak256(abi.encodePacked(msg.sender))
         );
 
         bool isAbleToMint = _mintApprovals[id] == bytes32(0) || whitelisted;
