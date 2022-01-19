@@ -5,18 +5,13 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
-import "hardhat/console.sol";
 
-contract GeneralCards is ERC1155, IERC2981, Ownable, ReentrancyGuard {
-    using Strings for uint256;
+contract GeneralCards is ERC1155, Ownable, ReentrancyGuard {
     using Address for address payable;
 
     struct TokenType {
@@ -169,13 +164,5 @@ contract GeneralCards is ERC1155, IERC2981, Ownable, ReentrancyGuard {
             to = payable(msg.sender);
         }
         to.sendValue(amount);
-    }
-
-    function royaltyInfo(uint256 tokenId, uint256 salePrice)
-        external
-        view
-        returns (address receiver, uint256 royaltyAmount)
-    {
-        return (owner(), salePrice / 20);
     }
 }
