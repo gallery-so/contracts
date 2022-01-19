@@ -1,0 +1,11 @@
+{
+  "name": "Season 001 Card",
+  "external_url": "https://gallery.so",
+  "description": "Welcome to Gallery.\n\nThis membership card is your key to the Gallery platform and community.\n\nSeason 001.\n\n[gallery.so](https://gallery.so)",
+  "image": "ipfs://QmXpuzP2nVyPQEcUUkUgNtrLksgkMXLDgE9m1jPHEp6LYL",
+  "attributes": [
+    { "trait_type": "Card", "value": "White" },
+    { "trait_type": "Season", "value": "001" },
+    { "trait_type": "Background", "value": "White" }
+  ]
+}

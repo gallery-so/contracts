@@ -1,16 +1,38 @@
 import fetch from "node-fetch"
 import fs from "fs"
+import { ethers } from "ethers"
 
+const alchemyKey = process.env.ALCHEMY_API_KEY
 const openseaAPIKey = process.env.OPENSEA_API_KEY
 const openseaAPIURL = "https://api.opensea.io/api/v1/assets"
 const zeroAddress = "0x0000000000000000000000000000000000000000"
 const contractaddress = "0x13aAe6f9599880edbB7d144BB13F1212CeE99533"
 
-function sleep(ms) {
-  return new Promise(resolve => {
-    setTimeout(resolve, ms)
-  })
-}
+const provider = new ethers.providers.AlchemyProvider(null, alchemyKey)
+
+const abi = [
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "owner",
+        type: "address",
+      },
+    ],
+    name: "tokensOfOwner",
+    outputs: [
+      {
+        internalType: "uint256[]",
+        name: "",
+        type: "uint256[]",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+]
+
+const contract = new ethers.Contract(contractaddress, abi, provider)
 
 const main = async () => {
   let snapshot = await fetchAssets(contractaddress, 0, 0)
@@ -38,7 +60,9 @@ const fetchAssets = async (contractAddress, offset, retry) => {
       await sleep(5000)
       return fetchAssets(contractAddress, offset, retry + 1)
     }
-    throw new Error(`${res.status} ${res.statusText}`)
+    const text = await res.text()
+
+    throw new Error(`${res.status} ${res.statusText} ${text}`)
   }
   console.log("Parsing opensea...")
   const json = await res.json()
@@ -60,6 +84,32 @@ const fetchAssets = async (contractAddress, offset, retry) => {
   }
 
   return dedupArray(toSnapshot)
+}
+
+const addUpLegendas = async owners => {
+  let total = 0
+  for (const owner of owners) {
+    let tokens = await contract.tokensOfOwner(owner)
+    for (const token of tokens) {
+      console.log(`${owner} - ${token.toNumber()}`)
+      let num = token.toNumber()
+      if (num < 1000000 || num > 1000887) {
+        continue
+      }
+      total++
+    }
+  }
+  return total
+}
+
+function sleep(ms) {
+  return new Promise(resolve => {
+    setTimeout(resolve, ms)
+  })
+}
+
+function dedupArray(array) {
+  return [...new Set(array)]
 }
 
 main()

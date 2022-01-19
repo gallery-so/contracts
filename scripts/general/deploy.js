@@ -1,9 +1,6 @@
 async function main() {
   const Contract = await ethers.getContractFactory("GeneralCards")
-  const contract = await Contract.deploy(
-    "Gallery General Membership Cards",
-    "GGMC"
-  )
+  const contract = await Contract.deploy()
   console.log("Contract deployed to address:", contract.address)
 }
 

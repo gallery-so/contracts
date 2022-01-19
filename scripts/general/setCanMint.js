@@ -1,7 +1,7 @@
 async function main() {
   const contract = await ethers.getContractAt(
     "GeneralCards",
-    process.env.TESTNET_GENERAL_CONTRACT_ADDRESS,
+    process.env.GENERAL_CONTRACT_ADDRESS,
     await ethers.getSigner()
   )
   const result = await contract.setCanMint(true)

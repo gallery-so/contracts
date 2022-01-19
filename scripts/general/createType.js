@@ -1,4 +1,3 @@
-const { BigNumber } = require("@ethersproject/bignumber")
 const { MerkleTree } = require("../helpers/merkleTree")
 
 async function main() {
@@ -8,7 +7,18 @@ async function main() {
     await ethers.getSigner()
   )
 
-  const result = await contract.createType(0, 0, 500, "test uri")
+  const elements = []
+  const tree = new MerkleTree(elements)
+
+  const root = tree.getHexRoot()
+
+  const result = await contract.createType(
+    0,
+    0,
+    10000,
+    root,
+    "ipfs://QmVrnp71dStgCiradDrsGDj4oV2bMcyQwCQoPvkbe4au31"
+  )
   console.log("Tx: ", result.hash)
 }
 

@@ -18,27 +18,25 @@ contract GeneralCards is ERC1155, Ownable, ReentrancyGuard {
         uint256 price;
         uint256 usedSupply;
         uint256 totalSupply;
+        bytes32 allowListMerkleRoot;
         string uri;
     }
 
     bool private canMint;
 
     mapping(uint256 => TokenType) _tokenTypes;
-    mapping(uint256 => bytes32) private _mintApprovals;
     mapping(address => mapping(uint256 => bool)) private _hasMinted;
 
-    string public name;
-    string public symbol;
+    string public constant name = "GeneralCards";
+    string public constant symbol = "GMC";
 
-    constructor(string memory _name, string memory _symbol) ERC1155("") {
-        name = _name;
-        symbol = _symbol;
-    }
+    constructor() ERC1155("") {}
 
     function createType(
         uint256 _id,
         uint256 _price,
         uint256 _totalSupply,
+        bytes32 _allowListMerkleRoot,
         string memory _uri
     ) public onlyOwner {
         require(
@@ -50,7 +48,14 @@ contract GeneralCards is ERC1155, Ownable, ReentrancyGuard {
             "General: must set an above zero total supply"
         );
         require(bytes(_uri).length > 0, "General: must set a URI");
-        _tokenTypes[_id] = TokenType(_price, 0, _totalSupply, _uri);
+
+        _tokenTypes[_id] = TokenType(
+            _price,
+            0,
+            _totalSupply,
+            _allowListMerkleRoot,
+            _uri
+        );
     }
 
     function uri(uint256 it)
@@ -83,6 +88,13 @@ contract GeneralCards is ERC1155, Ownable, ReentrancyGuard {
         return _tokenTypes[id].price;
     }
 
+    function setMintApprovals(uint256 id, bytes32 merkleRoot)
+        external
+        onlyOwner
+    {
+        _tokenTypes[id].allowListMerkleRoot = merkleRoot;
+    }
+
     function mintToMany(address[] calldata _to, uint256 _id)
         external
         onlyOwner
@@ -112,7 +124,7 @@ contract GeneralCards is ERC1155, Ownable, ReentrancyGuard {
         require(canMint, "General: minting is disabled");
         require(
             _tokenTypes[id].usedSupply < _tokenTypes[id].totalSupply ||
-                _mintApprovals[id] == bytes32(0),
+                _tokenTypes[id].allowListMerkleRoot == bytes32(0),
             "General: total supply used up"
         );
         require(
@@ -120,17 +132,18 @@ contract GeneralCards is ERC1155, Ownable, ReentrancyGuard {
             "General: cannot own more than one of a General Card"
         );
 
-        bool whitelisted = MerkleProof.verify(
+        bool allowlisted = MerkleProof.verify(
             merkleProof,
-            _mintApprovals[id],
+            _tokenTypes[id].allowListMerkleRoot,
             keccak256(abi.encodePacked(msg.sender))
         );
 
-        bool isAbleToMint = _mintApprovals[id] == bytes32(0) || whitelisted;
+        bool isAbleToMint = _tokenTypes[id].allowListMerkleRoot == bytes32(0) ||
+            allowlisted;
 
         if (_tokenTypes[id].price > 0) {
             require(
-                msg.value >= _tokenTypes[id].price || whitelisted,
+                msg.value >= _tokenTypes[id].price || allowlisted,
                 "General: incorrect price or not approved"
             );
             isAbleToMint = true;
@@ -146,13 +159,6 @@ contract GeneralCards is ERC1155, Ownable, ReentrancyGuard {
         _tokenTypes[id].usedSupply++;
         _hasMinted[to][id] = true;
         _mint(to, id, 1, bytes(""));
-    }
-
-    function setMintApprovals(uint256 id, bytes32 merkleRoot)
-        external
-        onlyOwner
-    {
-        _mintApprovals[id] = merkleRoot;
     }
 
     function withdraw(uint256 amount, address payable to) external onlyOwner {

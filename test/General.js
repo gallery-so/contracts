@@ -11,7 +11,7 @@ describe("General", function () {
   beforeEach(async function () {
     const [signer1, signer2] = await ethers.getSigners()
     General = await ethers.getContractFactory("GeneralCards")
-    general = await General.deploy("asdasd", "AS")
+    general = await General.deploy()
 
     const elements = [signer1.address, signer2.address]
     tree = new MerkleTree(elements)
@@ -19,18 +19,15 @@ describe("General", function () {
     proof = tree.getHexProof(signer1.address)
     incorrectProof = tree.getHexProof(signer2.address)
 
-    general.createType(0, 0, 100, "URI 0")
-    general.createType(1, 0, 1, "URI 1")
+    general.createType(0, 0, 100, tree.getHexRoot(), "URI 0")
+    general.createType(1, 0, 1, tree.getHexRoot(), "URI 1")
     general.createType(
       2,
       ethers.BigNumber.from("100000000000000000"),
       100,
+      tree.getHexRoot(),
       "URI 2"
     )
-
-    general.setMintApprovals(0, tree.getHexRoot())
-    general.setMintApprovals(1, tree.getHexRoot())
-    general.setMintApprovals(2, tree.getHexRoot())
 
     general.setCanMint(true)
   })
