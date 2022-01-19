@@ -13,11 +13,11 @@ const {
 } = process.env
 module.exports = {
   solidity: {
-    version: "0.8.9",
+    version: "0.8.11",
     settings: {
       optimizer: {
         enabled: true,
-        runs: 200,
+        runs: 300,
       },
     },
   },

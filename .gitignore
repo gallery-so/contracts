@@ -4,3 +4,4 @@ cache/
 artifacts/
 .env
 .openzeppelin/
+snapshot.json
