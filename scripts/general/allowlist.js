@@ -3,13 +3,13 @@ const { MerkleTree } = require("../helpers/merkleTree")
 async function main() {
   const contract = await ethers.getContractAt(
     "GeneralCards",
-    process.env.TESTNET_GENERAL_CONTRACT_ADDRESS,
+    process.env.GENERAL_CONTRACT_ADDRESS,
     await ethers.getSigner()
   )
 
-  const elements = [
-    /* whitelisted addresses */
-  ]
+  const elements = []
+  
+
   const tree = new MerkleTree(elements)
 
   const root = tree.getHexRoot()
