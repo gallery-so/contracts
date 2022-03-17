@@ -15,6 +15,7 @@ contract MerchNFTs is ERC721A, Ownable {
 
     struct MerchType {
         uint256 price;
+        uint256 maxPerWallet;
         uint256 usedSupply;
         uint256 maxSupply;
         string uri;
@@ -23,13 +24,12 @@ contract MerchNFTs is ERC721A, Ownable {
 
     bool private canMint;
 
-    uint256 public maxPerWallet = 5;
-
     bytes32 private _allowlistMerkleRoot;
 
     mapping(uint256 => bool) private _redeemed;
 
     mapping(uint256 => MerchType) private _merchTypes;
+    mapping(uint256 => mapping(address => uint256)) private _merchOwners;
     mapping(uint256 => uint256) private _tokenIDToMerchType;
 
     constructor() ERC721A("Gallery Merch NFTs", "GMS") {}
@@ -51,19 +51,30 @@ contract MerchNFTs is ERC721A, Ownable {
     function setMerchType(
         uint256 id,
         uint256 price,
+        uint256 maxPerWallet,
         uint256 maxSupply,
         string calldata uri,
         string calldata redeemedURI
     ) public onlyOwner {
-        _merchTypes[id] = MerchType(price, 0, maxSupply, uri, redeemedURI);
+        _merchTypes[id] = MerchType(
+            price,
+            maxPerWallet,
+            0,
+            maxSupply,
+            uri,
+            redeemedURI
+        );
     }
 
     function setCanMint(bool _canMint) public onlyOwner {
         canMint = _canMint;
     }
 
-    function setMaxPerWallet(uint256 _maxPerWallet) public onlyOwner {
-        maxPerWallet = _maxPerWallet;
+    function setMaxPerWallet(uint256 merchType, uint256 _maxPerWallet)
+        public
+        onlyOwner
+    {
+        _merchTypes[merchType].maxPerWallet = _maxPerWallet;
     }
 
     function setPrice(uint256 merchType, uint256 price) public onlyOwner {
@@ -84,11 +95,6 @@ contract MerchNFTs is ERC721A, Ownable {
         bytes32[] calldata merkleProof
     ) external payable {
         require(canMint, "Merch: minting is disabled");
-        require(
-            _numberMinted(to) + merchTypes.length < maxPerWallet ||
-                maxPerWallet == 0,
-            "Merch: already owns max per wallet"
-        );
 
         require(
             _allowlistMerkleRoot == bytes32(0) ||
@@ -104,10 +110,16 @@ contract MerchNFTs is ERC721A, Ownable {
         for (uint256 i = 0; i < merchTypes.length; i++) {
             uint256 mt = merchTypes[i];
             require(
+                _merchOwners[mt][to] < _merchTypes[mt].maxPerWallet ||
+                    _merchTypes[mt].maxPerWallet == 0,
+                "Merch: already owns max per wallet"
+            );
+            require(
                 _merchTypes[mt].usedSupply < _merchTypes[mt].maxSupply,
                 "Merch: max supply reached"
             );
             totalPrice += _merchTypes[mt].price;
+            _merchOwners[mt][to]++;
             _merchTypes[mt].usedSupply++;
             _tokenIDToMerchType[_currentIndex + i] = mt;
         }
