@@ -17,19 +17,19 @@ contract MerchNFTs is ERC721A, Ownable {
         uint256 price;
         uint256 usedSupply;
         uint256 maxSupply;
-        uint256 maxPerWallet;
         string uri;
         string redeemedURI;
     }
 
     bool private canMint;
 
+    uint256 public maxPerWallet = 5;
+
     bytes32 private _allowlistMerkleRoot;
 
     mapping(uint256 => bool) private _redeemed;
 
     mapping(uint256 => MerchType) private _merchTypes;
-    mapping(address => uint256) private _merchOwners;
     mapping(uint256 => uint256) private _tokenIDToMerchType;
 
     constructor() ERC721A("Gallery Merch NFTs", "GMS") {}
@@ -52,22 +52,18 @@ contract MerchNFTs is ERC721A, Ownable {
         uint256 id,
         uint256 price,
         uint256 maxSupply,
-        uint256 maxPerWallet,
         string calldata uri,
         string calldata redeemedURI
     ) public onlyOwner {
-        _merchTypes[id] = MerchType(
-            price,
-            0,
-            maxSupply,
-            maxPerWallet,
-            uri,
-            redeemedURI
-        );
+        _merchTypes[id] = MerchType(price, 0, maxSupply, uri, redeemedURI);
     }
 
     function setCanMint(bool _canMint) public onlyOwner {
         canMint = _canMint;
+    }
+
+    function setMaxPerWallet(uint256 _maxPerWallet) public onlyOwner {
+        maxPerWallet = _maxPerWallet;
     }
 
     function setPrice(uint256 merchType, uint256 price) public onlyOwner {
@@ -84,49 +80,46 @@ contract MerchNFTs is ERC721A, Ownable {
 
     function mint(
         address to,
-        uint256 merchType,
+        uint256[] memory merchTypes,
         bytes32[] calldata merkleProof
     ) external payable {
         require(canMint, "Merch: minting is disabled");
         require(
-            _merchTypes[merchType].usedSupply <
-                _merchTypes[merchType].maxSupply,
-            "Merch: total supply used up"
-        );
-        require(
-            _merchOwners[to] < _merchTypes[merchType].maxPerWallet ||
-                _merchTypes[merchType].maxPerWallet == 0,
+            _numberMinted(to) + merchTypes.length < maxPerWallet ||
+                maxPerWallet == 0,
             "Merch: already owns max per wallet"
         );
 
-        bool allowlisted = MerkleProof.verify(
-            merkleProof,
-            _allowlistMerkleRoot,
-            keccak256(abi.encodePacked(msg.sender, merchType))
+        require(
+            _allowlistMerkleRoot == bytes32(0) ||
+                MerkleProof.verify(
+                    merkleProof,
+                    _allowlistMerkleRoot,
+                    keccak256(abi.encodePacked(msg.sender))
+                ),
+            "Merch: not allowlisted"
         );
 
-        bool isAbleToMint = _allowlistMerkleRoot == bytes32(0) || allowlisted;
-
-        if (_merchTypes[merchType].price > 0) {
+        uint256 totalPrice = 0;
+        for (uint256 i = 0; i < merchTypes.length; i++) {
+            uint256 mt = merchTypes[i];
             require(
-                msg.value >= _merchTypes[merchType].price,
-                "Merch: incorrect price or not approved"
+                _merchTypes[mt].usedSupply < _merchTypes[mt].maxSupply,
+                "Merch: max supply reached"
             );
-            isAbleToMint = true;
-        } else {
-            require(msg.value == 0, "Merch: sent value for non-payable merch");
+            totalPrice += _merchTypes[mt].price;
+            _merchTypes[mt].usedSupply++;
+            _tokenIDToMerchType[_currentIndex + i] = mt;
         }
 
-        require(isAbleToMint, "Merch: not approved to mint");
+        require(msg.value >= totalPrice, "Merch: incorrect price");
 
-        _merchTypes[merchType].usedSupply++;
-        _merchOwners[to]++;
-        _tokenIDToMerchType[_currentIndex] = merchType;
-        _mint(to, 1, "", true);
+        _mint(to, merchTypes.length, "", true);
     }
 
     function redeem(uint256 tokenID) external {
         require(_redeemed[tokenID] == false, "Merch: token already redeemed");
+        require(ownerOf(tokenID) == msg.sender, "Merch: not owner");
         _redeemed[tokenID] = true;
     }
 
