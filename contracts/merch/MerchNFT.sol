@@ -117,10 +117,15 @@ contract MerchNFTs is ERC721A, Ownable {
         _mint(to, merchTypes.length, "", true);
     }
 
-    function redeem(uint256 tokenID) external {
-        require(_redeemed[tokenID] == false, "Merch: token already redeemed");
-        require(ownerOf(tokenID) == msg.sender, "Merch: not owner");
-        _redeemed[tokenID] = true;
+    function redeem(uint256[] calldata tokenIDs) external {
+        for (uint256 i = 0; i < tokenIDs.length; i++) {
+            require(
+                _redeemed[tokenIDs[i]] == false,
+                "Merch: token already redeemed"
+            );
+            require(ownerOf(tokenIDs[i]) == msg.sender, "Merch: not owner");
+            _redeemed[tokenIDs[i]] = true;
+        }
     }
 
     function withdraw(uint256 amount, address payable to) external onlyOwner {
