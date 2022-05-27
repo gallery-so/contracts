@@ -14,7 +14,7 @@
 
 ```json
 {
-	 // to snapshot the entire ERC-721 collection using opensea
+	 // to snapshot an entire ERC-721 collection using opensea
 	 "erc721addresses": [ "erc721contractAddress1", "erc721contractAddress2", ...],
 	 // if you want a specific range of token IDs from an ERC721
 	 "erc721TokenIDRanges": { "erc721contractAddress3": [0, 100], "erc721contractAddress4": [900, 10040] },
