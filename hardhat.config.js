@@ -30,7 +30,7 @@ module.exports = {
       url: API_URL,
       accounts: [`0x${PRIVATE_KEY}`],
       from: PUBLIC_KEY,
-      gasPrice: GAS_PRICE,
+      gasPrice: GAS_PRICE ?? 50000000000,
     },
     test: {
       url: TEST_URL,
