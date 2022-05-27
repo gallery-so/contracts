@@ -2,6 +2,10 @@
 
 ### The official repository of the smart contracts and deployment/upgrade scripts for official Gallery NFTs.
 
+
+*Before doing anything, make sure you have node/npm/yarn installed and have initialized dependencies.*
+
+
 ## Snapshotting and Allowlisting
 
 1. Ensure you have the most recent snapshot in a file called `snapshot/snapshot-old.json` and your `.env` file is complete. You can find the old snapshot [here](https://storage.cloud.google.com/gallery-prod-325303.appspot.com/snapshot.json) and you can use `.env.sample` to create a good `.env` file.
