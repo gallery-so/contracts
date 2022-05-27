@@ -19,7 +19,7 @@
 	 "openseaCollectionNames": ["collection-name-1", "collection-name-2", ...],
 	 // the owners of a single token ID in an ERC-1155 contract. For example, the Gallery Membership Card Tiers.
 	 // note: when a number is too long, javascript complains. Just surround it in quotes
-	 "erc1155AddressTokenIDs": {"erc1155contractAddress1": 5, "erc1155contractAddress2": "10003920003940"}'
+	 "erc1155AddressTokenIDs": {"erc1155contractAddress1": 5, "erc1155contractAddress2": "10003920003940"},
 	 // any addresses to manually include
 	 "manualInclude": ["address1", "address2", ...]
 }
