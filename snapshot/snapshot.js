@@ -6,7 +6,7 @@ const openseaAPIKey = process.env.OPENSEA_API_KEY;
 const openseaAPIURL = "https://api.opensea.io/api/v1/assets";
 const alchemyAPIURL = process.env.API_URL;
 const zeroAddress = "0x0000000000000000000000000000000000000000";
-const toSnapshot = JSON.parse(fs.readFileSync("./to-snapshot.json"));
+const toSnapshot = JSON.parse(fs.readFileSync("./snapshot/to-snapshot.json"));
 const {
   erc721Addresses,
   erc721TokenIDRanges,
@@ -15,7 +15,7 @@ const {
   manualInclude,
 } = toSnapshot;
 
-const oldSnapshot = JSON.parse(fs.readFileSync("./snapshot-old.json"));
+const oldSnapshot = JSON.parse(fs.readFileSync("./snapshot/snapshot-old.json"));
 
 const main = async () => {
   let toSnapshot = [];
@@ -30,7 +30,7 @@ const main = async () => {
 
   console.log("Fetching erc1155 assets...");
 
-  for (const [address, tokenID] of Object.entries(erc1155AddressTokenIDs)) {
+  for (const [address, tokenID] of erc1155AddressTokenIDs) {
     console.log(
       `Fetching ERC-1155 assets for ${address} and tokenID ${tokenID}`
     );
@@ -40,11 +40,14 @@ const main = async () => {
 
   console.log("Fetching ERC-721 token ID ranges...");
 
-  console.log(`Fetched ${toSnapshot.length} assets`);
-  for (const [address, range] of Object.entries(erc721TokenIDRanges)) {
+  for (const [address, range] of erc721TokenIDRanges) {
     console.log(`Fetching ranged assets for ${address} and range ${range}`);
-    const owners = await fetchAssetsOfRange(address, range, 0);
+    const assets = await fetchAssetsOfRange(address, range, 0);
+    let owners = validate(assets);
+    owners = lowercase(owners);
+    owners = dedupe(owners);
     toSnapshot = toSnapshot.concat(owners);
+    console.log(`Fetched ${assets.length} assets, ${owners.length} owners`);
   }
 
   console.log("Fetching ERC-721 assets...");
@@ -62,13 +65,13 @@ const main = async () => {
 
   // Validation
 
-  toSnapshot = dedupe(toSnapshot);
   toSnapshot = validate(toSnapshot);
   toSnapshot = lowercase(toSnapshot);
+  toSnapshot = dedupe(toSnapshot);
 
   console.log(`Fetched ${toSnapshot.length} assets`);
 
-  fs.writeFileSync("./snapshot.json", JSON.stringify(toSnapshot));
+  fs.writeFileSync("./snapshot/snapshot.json", JSON.stringify(toSnapshot));
   console.log("Done!");
 };
 
@@ -117,6 +120,10 @@ const fetchAssets = async (contractAddress, cursor, retry) => {
 
 const fetchAssetsOfRange = async (contractAddress, range, retry) => {
   let toSnapshot = [];
+  console.log("fetchAssetsOfRange", { contractAddress, range, retry });
+  if (range[0] > range[1]) {
+    return toSnapshot;
+  }
 
   let url = `${openseaAPIURL}?limit=30&order_direction=desc&asset_contract_address=${contractAddress}`;
   for (let i = range[0]; i <= range[1] && i < 30 + range[0]; i++) {
@@ -222,6 +229,9 @@ function sleep(ms) {
 
 const validate = (arr) => {
   return arr.filter((item) => {
+    if (item.length !== 42) {
+      throw new Error(`ERROR: address length is messed up for ${item}!`);
+    }
     return item.length === 42;
   });
 };
