@@ -2,6 +2,7 @@ require("dotenv").config();
 require("@nomiclabs/hardhat-waffle");
 require("@nomiclabs/hardhat-truffle5");
 require("hardhat-gas-reporter");
+
 const {
   API_URL,
   PRIVATE_KEY,
@@ -12,6 +13,7 @@ const {
   TEST_PUBLIC_KEY,
   GAS_PRICE,
 } = process.env;
+
 module.exports = {
   solidity: {
     version: "0.8.11",
@@ -30,7 +32,8 @@ module.exports = {
       url: API_URL,
       accounts: [`0x${PRIVATE_KEY}`],
       from: PUBLIC_KEY,
-      gasPrice: GAS_PRICE ?? 50000000000,
+      // must be number type; .env gets read as string
+      gasPrice: Number(GAS_PRICE) ? Number(GAS_PRICE) : 50000000000,
     },
     test: {
       url: TEST_URL,
