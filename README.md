@@ -25,8 +25,9 @@ _Before doing anything, make sure you have node/npm/yarn installed and have init
 	 "openseaCollectionNames": ["collection-name-1", "collection-name-2", ...],
 	 // the owners of a single token ID in an ERC-1155 contract. For example, the Gallery Membership Card Tiers.
 	 // all ERC-1155 contracts should be here, opensea cannot handle ERC-1155 contracts
-	 // note: when a number is too long, javascript complains. Just surround it in quotes
-	 // duplicate contract addresses are allowed!
+	 // note 1: duplicate contract addresses are allowed!
+	 // note 2: when a number is too long, javascript complains. Just surround it in quotes
+	 // note 3: you can also toss in ERC-721s in here
 	 "erc1155AddressTokenIDs": [
 		 ["erc1155contractAddress1", 5],
 		 ["erc1155contractAddress2", "10003920003940"]
