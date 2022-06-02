@@ -8,7 +8,7 @@ async function main() {
     await ethers.getSigner()
   );
 
-  const elements = JSON.parse(fs.readFileSync("snapshot.json"));
+  const elements = JSON.parse(fs.readFileSync("./snapshot/snapshot.json"));
 
   console.log(`Len: ${elements.length}`);
 

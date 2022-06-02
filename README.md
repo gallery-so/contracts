@@ -2,9 +2,7 @@
 
 ### The official repository of the smart contracts and deployment/upgrade scripts for official Gallery NFTs.
 
-
-*Before doing anything, make sure you have node/npm/yarn installed and have initialized dependencies.*
-
+_Before doing anything, make sure you have node/npm/yarn installed and have initialized dependencies._
 
 ## Snapshotting and Allowlisting
 
@@ -17,14 +15,23 @@
 	 // to snapshot an entire ERC-721 collection using opensea
 	 "erc721addresses": [ "erc721contractAddress1", "erc721contractAddress2", ...],
 	 // if you want a specific range of token IDs from an ERC721
-	 "erc721TokenIDRanges": { "erc721contractAddress3": [0, 100], "erc721contractAddress4": [900, 10040] },
+	 // can duplicate contract addresses if multiple ranges within same contract
+	 "erc721TokenIDRanges": [
+		 ["erc721contractAddress3": [0, 100]],
+		 ["erc721contractAddress4": [900, 10040]]
+	 ],
 	 // snapshot an opensea collection, great for art blocks collections because they are separated into collections on opensea but not in the contract.
 	 // the collection name is the last part of the URL on a collection page. e.g. https://opensea.io/collection/chromie-squiggle-by-snowfro -> "chromie-squiggle-by-snowfro"
 	 "openseaCollectionNames": ["collection-name-1", "collection-name-2", ...],
 	 // the owners of a single token ID in an ERC-1155 contract. For example, the Gallery Membership Card Tiers.
 	 // all ERC-1155 contracts should be here, opensea cannot handle ERC-1155 contracts
-	 // note: when a number is too long, javascript complains. Just surround it in quotes
-	 "erc1155AddressTokenIDs": {"erc1155contractAddress1": 5, "erc1155contractAddress2": "10003920003940"},
+	 // note 1: duplicate contract addresses are allowed!
+	 // note 2: when a number is too long, javascript complains. Just surround it in quotes
+	 // note 3: you can also toss in ERC-721s in here
+	 "erc1155AddressTokenIDs": [
+		 ["erc1155contractAddress1", 5],
+		 ["erc1155contractAddress2", "10003920003940"]
+	 ],
 	 // any addresses to manually include
 	 "manualInclude": ["address1", "address2", ...]
 }

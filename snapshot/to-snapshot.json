@@ -1,7 +1,7 @@
 {
   "erc721Addresses": [],
-  "erc721TokenIDRanges": {},
+  "erc721TokenIDRanges": [],
   "openseaCollectionNames": [],
-  "erc1155AddressTokenIDs": {},
+  "erc1155AddressTokenIDs": [],
   "manualInclude": []
 }
