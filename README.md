@@ -17,8 +17,8 @@ _Before doing anything, make sure you have node/npm/yarn installed and have init
 	 // if you want a specific range of token IDs from an ERC721
 	 // can duplicate contract addresses if multiple ranges within same contract
 	 "erc721TokenIDRanges": [
-		 ["erc721contractAddress3": [0, 100]],
-		 ["erc721contractAddress4": [900, 10040]]
+		 ["erc721contractAddress3", [0, 100]],
+		 ["erc721contractAddress4", [900, 10040]]
 	 ],
 	 // snapshot an opensea collection, great for art blocks collections because they are separated into collections on opensea but not in the contract.
 	 // the collection name is the last part of the URL on a collection page. e.g. https://opensea.io/collection/chromie-squiggle-by-snowfro -> "chromie-squiggle-by-snowfro"

@@ -1,5 +1,5 @@
 async function main() {
-  const Contract = await ethers.getContractFactory("GalleryMemorabilia");
+  const Contract = await ethers.getContractFactory("GalleryMementos");
   const contract = await Contract.deploy();
   console.log("Contract deployed to address:", contract.address);
 }

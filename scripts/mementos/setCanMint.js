@@ -1,10 +1,10 @@
 async function main() {
   const contract = await ethers.getContractAt(
-    "GalleryMemorabilia",
-    process.env.TESTNET_MEMORABILIA_CONTRACT_ADDRESS,
+    "GalleryMementos",
+    process.env.MEMENTOS_CONTRACT_ADDRESS,
     await ethers.getSigner()
   );
-  const result = await contract.setCanMint(true);
+  const result = await contract.setCanMint(false);
   console.log("Tx: ", result.hash);
 }
 

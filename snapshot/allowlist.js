@@ -16,6 +16,7 @@ async function main() {
 
   const root = tree.getHexRoot();
   const result = await contract.setMintApprovals(0, root);
+  await result.wait();
   console.log("Tx: ", result.hash);
 }
 

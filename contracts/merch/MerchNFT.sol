@@ -16,15 +16,16 @@ contract MerchNFTs is ERC721A, Ownable {
     struct MerchType {
         uint256 price;
         uint256 maxPerWallet;
-        uint256 usedSupply;
-        uint256 maxSupply;
+        uint256 usedPublicSupply;
+        uint256 publicSupply;
+        uint256 usedReserveSupply;
+        uint256 reserveSupply;
+        bytes32 allowlistMerkleRoot;
         string uri;
         string redeemedURI;
     }
 
     bool private canMint;
-
-    bytes32 private _allowlistMerkleRoot;
 
     mapping(uint256 => bool) private _redeemed;
 
@@ -52,15 +53,20 @@ contract MerchNFTs is ERC721A, Ownable {
         uint256 id,
         uint256 price,
         uint256 maxPerWallet,
-        uint256 maxSupply,
+        uint256 maxPublicSupply,
+        uint256 maxReserveSupply,
+        bytes32 allowListMerkleRoot,
         string calldata uri,
         string calldata redeemedURI
     ) public onlyOwner {
         _merchTypes[id] = MerchType(
             price,
             maxPerWallet,
-            0,
-            maxSupply,
+            _merchTypes[id].usedPublicSupply,
+            maxPublicSupply,
+            _merchTypes[id].usedReserveSupply,
+            maxReserveSupply,
+            allowListMerkleRoot,
             uri,
             redeemedURI
         );
@@ -81,61 +87,112 @@ contract MerchNFTs is ERC721A, Ownable {
         _merchTypes[merchType].price = price;
     }
 
-    function setAllowlist(bytes32 merkleRoot) external onlyOwner {
-        _allowlistMerkleRoot = merkleRoot;
+    function setAllowlist(uint256 merchType, bytes32 merkleRoot)
+        external
+        onlyOwner
+    {
+        _merchTypes[merchType].allowlistMerkleRoot = merkleRoot;
     }
 
-    function setMaxSupply(uint256 merchType, uint256 supply) public onlyOwner {
-        _merchTypes[merchType].maxSupply = supply;
+    function setPublicSupply(uint256 merchType, uint256 supply)
+        public
+        onlyOwner
+    {
+        _merchTypes[merchType].publicSupply = supply;
+    }
+
+    function setReserveSupply(uint256 merchType, uint256 supply)
+        public
+        onlyOwner
+    {
+        _merchTypes[merchType].reserveSupply = supply;
     }
 
     function mint(
         address to,
-        uint256[] memory merchTypes,
+        uint256 merchType,
+        uint256 amount,
         bytes32[] calldata merkleProof
     ) external payable {
         require(canMint, "Merch: minting is disabled");
 
         require(
-            _allowlistMerkleRoot == bytes32(0) ||
+            _merchTypes[merchType].allowlistMerkleRoot == bytes32(0) ||
                 MerkleProof.verify(
                     merkleProof,
-                    _allowlistMerkleRoot,
+                    _merchTypes[merchType].allowlistMerkleRoot,
                     keccak256(abi.encodePacked(msg.sender))
                 ),
             "Merch: not allowlisted"
         );
 
-        uint256 totalPrice = 0;
-        for (uint256 i = 0; i < merchTypes.length; i++) {
-            uint256 mt = merchTypes[i];
+        require(
+            _merchOwners[merchType][to] + amount <=
+                _merchTypes[merchType].maxPerWallet ||
+                _merchTypes[merchType].maxPerWallet == 0,
+            "Merch: already owns max per wallet"
+        );
+        require(
+            _merchTypes[merchType].usedPublicSupply + amount <=
+                _merchTypes[merchType].publicSupply,
+            "Merch: max supply reached"
+        );
+
+        _merchOwners[merchType][to] += amount;
+        _merchTypes[merchType].usedPublicSupply += amount;
+        for (uint256 i = 0; i < amount; i++) {
+            _tokenIDToMerchType[_currentIndex + i] = merchType;
+        }
+
+        require(
+            msg.value == _merchTypes[merchType].price * amount,
+            "Merch: incorrect price"
+        );
+
+        _mint(to, amount, "", true);
+    }
+
+    function mintReserve(
+        address[] calldata to,
+        uint256[] calldata merchType,
+        uint256[] calldata amount
+    ) external payable onlyOwner {
+        require(
+            to.length == merchType.length && to.length == amount.length,
+            "Merch: invalid parameters"
+        );
+
+        for (uint256 i = 0; i < to.length; i++) {
             require(
-                _merchOwners[mt][to] < _merchTypes[mt].maxPerWallet ||
-                    _merchTypes[mt].maxPerWallet == 0,
+                _merchOwners[merchType[i]][to[i]] + amount[i] <=
+                    _merchTypes[merchType[i]].maxPerWallet ||
+                    _merchTypes[merchType[i]].maxPerWallet == 0,
                 "Merch: already owns max per wallet"
             );
             require(
-                _merchTypes[mt].usedSupply < _merchTypes[mt].maxSupply,
+                _merchTypes[merchType[i]].usedReserveSupply + amount[i] <=
+                    _merchTypes[merchType[i]].reserveSupply,
                 "Merch: max supply reached"
             );
-            totalPrice += _merchTypes[mt].price;
-            _merchOwners[mt][to]++;
-            _merchTypes[mt].usedSupply++;
-            _tokenIDToMerchType[_currentIndex + i] = mt;
+            _merchOwners[merchType[i]][to[i]] += amount[i];
+            _merchTypes[merchType[i]].usedReserveSupply += amount[i];
+            for (uint256 j = 0; j < amount[i]; j++) {
+                _tokenIDToMerchType[_currentIndex + j] = merchType[i];
+            }
+
+            _mint(to[i], amount[i], "", true);
         }
-
-        require(msg.value >= totalPrice, "Merch: incorrect price");
-
-        _mint(to, merchTypes.length, "", true);
     }
 
     function redeem(uint256[] calldata tokenIDs) external {
         for (uint256 i = 0; i < tokenIDs.length; i++) {
-            require(
-                _redeemed[tokenIDs[i]] == false,
-                "Merch: token already redeemed"
-            );
             require(ownerOf(tokenIDs[i]) == msg.sender, "Merch: not owner");
+            _redeemed[tokenIDs[i]] = true;
+        }
+    }
+
+    function redeemAdmin(uint256[] calldata tokenIDs) external onlyOwner {
+        for (uint256 i = 0; i < tokenIDs.length; i++) {
             _redeemed[tokenIDs[i]] = true;
         }
     }

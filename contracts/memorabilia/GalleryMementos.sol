@@ -10,7 +10,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
-contract GalleryMemorabilia is ERC1155, Ownable {
+contract GalleryMementos is ERC1155, Ownable {
     using Address for address payable;
 
     struct TokenType {
@@ -26,7 +26,7 @@ contract GalleryMemorabilia is ERC1155, Ownable {
     mapping(uint256 => TokenType) _tokenTypes;
     mapping(address => mapping(uint256 => bool)) private _hasMinted;
 
-    string public constant name = "Gallery Memorabilia";
+    string public constant name = "Gallery Mementos";
     string public constant symbol = "GM";
 
     constructor() ERC1155("") {}
@@ -64,13 +64,6 @@ contract GalleryMemorabilia is ERC1155, Ownable {
         return _tokenTypes[_id].price;
     }
 
-    function setAllowlistRoot(uint256 _id, bytes32 merkleRoot)
-        external
-        onlyOwner
-    {
-        _tokenTypes[_id].allowListMerkleRoot = merkleRoot;
-    }
-
     function uri(uint256 id)
         public
         view
@@ -82,19 +75,23 @@ contract GalleryMemorabilia is ERC1155, Ownable {
     }
 
     function mintToMany(uint256 id, address[] calldata _to) external onlyOwner {
-        require(canMint, "Poster: minting is disabled");
+        require(canMint, "Memorabilia: minting is disabled");
+        require(
+            bytes(_tokenTypes[id].uri).length > 0,
+            "Memorabilia: no URI set"
+        );
         if (_tokenTypes[id].maxSupply > 0) {
             require(
                 _to.length + _tokenTypes[id].usedSupply <
                     _tokenTypes[id].maxSupply,
-                "Poster: max supply reached"
+                "Memorabilia: max supply reached"
             );
         }
         for (uint256 i = 0; i < _to.length; ++i) {
             address to = _to[i];
             require(
                 !_hasMinted[to][id] && balanceOf(to, id) == 0,
-                "Poster: cannot own more than one of a General Card"
+                "Memorabilia: cannot own more than one of a General Card"
             );
             _tokenTypes[id].usedSupply++;
             _hasMinted[to][id] = true;
@@ -107,16 +104,20 @@ contract GalleryMemorabilia is ERC1155, Ownable {
         address to,
         bytes32[] calldata merkleProof
     ) external payable {
-        require(canMint, "Poster: minting is disabled");
+        require(canMint, "Memorabilia: minting is disabled");
+        require(
+            bytes(_tokenTypes[id].uri).length > 0,
+            "Memorabilia: no URI set"
+        );
         if (_tokenTypes[id].maxSupply > 0) {
             require(
                 _tokenTypes[id].usedSupply < _tokenTypes[id].maxSupply,
-                "Poster: max supply reached"
+                "Memorabilia: max supply reached"
             );
         }
         require(
             balanceOf(to, id) == 0 && !_hasMinted[to][id],
-            "Poster: cannot mint while owning poster"
+            "Memorabilia: cannot mint while owning poster"
         );
         bool allowlisted = MerkleProof.verify(
             merkleProof,

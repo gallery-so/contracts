@@ -1,25 +1,21 @@
 const { MerkleTree } = require("../helpers/merkleTree");
+const fs = require("fs");
 
 async function main() {
   const contract = await ethers.getContractAt(
-    "GalleryMemorabilia",
-    process.env.TESTNET_MEMORABILIA_CONTRACT_ADDRESS,
+    "GalleryMementos",
+    process.env.MEMENTOS_CONTRACT_ADDRESS,
     await ethers.getSigner()
   );
 
-  const elements = ["0x456d569592f15af845d0dbe984c12bab8f430e31"];
+  const elements = JSON.parse(fs.readFileSync("snapshot.json"));
+
+  console.log(`Len: ${elements.length}`);
+
   const tree = new MerkleTree(elements);
 
   const root = tree.getHexRoot();
-
-  const result = await contract.setTokenType(
-    0,
-    0,
-    0,
-    0,
-    root,
-    "ipfs://QmXvx1hpvmnYKGpp27PSMNVaXJMVFFeVdGMiYBNnC9A3Ss"
-  );
+  const result = await contract.setAllowlistRoot(0, root);
   console.log("Tx: ", result.hash);
 }
 
