@@ -10,7 +10,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
-contract MerchNFTs is ERC721A, Ownable {
+contract GalleryMerch is ERC721A, Ownable {
     using Address for address payable;
 
     struct MerchType {
@@ -33,7 +33,7 @@ contract MerchNFTs is ERC721A, Ownable {
     mapping(uint256 => mapping(address => uint256)) private _merchOwners;
     mapping(uint256 => uint256) private _tokenIDToMerchType;
 
-    constructor() ERC721A("Gallery Merch NFTs", "GMS") {}
+    constructor() ERC721A("Gallery Merch", "GM") {}
 
     function tokenURI(uint256 tokenId)
         public
@@ -70,6 +70,30 @@ contract MerchNFTs is ERC721A, Ownable {
             uri,
             redeemedURI
         );
+    }
+
+    function getPublicSupply(uint256 merchType) public view returns (uint256) {
+        return _merchTypes[merchType].publicSupply;
+    }
+
+    function getReserveSupply(uint256 merchType) public view returns (uint256) {
+        return _merchTypes[merchType].reserveSupply;
+    }
+
+    function getUsedPublicSupply(uint256 merchType)
+        public
+        view
+        returns (uint256)
+    {
+        return _merchTypes[merchType].usedPublicSupply;
+    }
+
+    function getUsedReserveSupply(uint256 merchType)
+        public
+        view
+        returns (uint256)
+    {
+        return _merchTypes[merchType].usedReserveSupply;
     }
 
     function setCanMint(bool _canMint) public onlyOwner {
