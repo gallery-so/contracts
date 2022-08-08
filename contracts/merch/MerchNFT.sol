@@ -9,8 +9,10 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/utils/cryptography/draft-EIP712.sol";
 
-contract GalleryMerch is ERC721A, Ownable {
+contract GalleryMerch is ERC721A, Ownable, EIP712 {
     using Address for address payable;
 
     struct MerchType {
@@ -32,8 +34,9 @@ contract GalleryMerch is ERC721A, Ownable {
     mapping(uint256 => MerchType) private _merchTypes;
     mapping(uint256 => mapping(address => uint256)) private _merchOwners;
     mapping(uint256 => uint256) private _tokenIDToMerchType;
+    mapping(address => uint256) private _transferNonces;
 
-    constructor() ERC721A("Gallery Merch", "GM") {}
+    constructor() ERC721A("Gallery Merch", "GM") EIP712("GalleryMerch", "0") {}
 
     function tokenURI(uint256 tokenId)
         public
@@ -130,6 +133,80 @@ contract GalleryMerch is ERC721A, Ownable {
         onlyOwner
     {
         _merchTypes[merchType].reserveSupply = supply;
+    }
+
+    function getTransferNonce(address owner) public view returns (uint256) {
+        return _transferNonces[owner];
+    }
+
+    /**
+     * @dev See {IERC721-transferFrom}.
+     */
+    function transferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) public virtual override {
+        require(!_redeemed[tokenId], "Cannot transfer a redeemed token");
+        super.transferFrom(from, to, tokenId);
+    }
+
+    /**
+     * @dev See {IERC721-safeTransferFrom}.
+     */
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) public virtual override {
+        require(!_redeemed[tokenId], "Cannot transfer a redeemed token");
+        super.safeTransferFrom(from, to, tokenId);
+    }
+
+    /**
+     * @dev See {IERC721-safeTransferFrom}.
+     */
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId,
+        bytes memory _data
+    ) public virtual override {
+        require(!_redeemed[tokenId], "Cannot transfer a redeemed token");
+        super.safeTransferFrom(from, to, tokenId, _data);
+    }
+
+    function approvedTransfer(
+        address to,
+        uint256 tokenId,
+        bytes memory signature,
+        uint256 deadline
+    ) public virtual {
+        bytes32 digest = _hashTypedDataV4(
+            keccak256(
+                abi.encode(
+                    keccak256(
+                        "ApprovedTransfer(address from,uint256 tokenId,uint256 nonce,uint256 deadline)"
+                    ),
+                    msg.sender,
+                    tokenId,
+                    _transferNonces[msg.sender],
+                    deadline
+                )
+            )
+        );
+
+        address signer = ECDSA.recover(digest, signature);
+        require(signer == to, "ApprovedTransfer: invalid signature");
+        require(signer != address(0), "ECDSA: invalid signature");
+
+        require(
+            block.timestamp < deadline,
+            "ApprovedTransfer: signed transaction expired"
+        );
+        _transferNonces[msg.sender]++;
+
+        super.safeTransferFrom(msg.sender, to, tokenId);
     }
 
     function mint(
