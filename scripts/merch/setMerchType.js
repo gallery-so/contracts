@@ -29,7 +29,7 @@ async function main() {
   console.log(root);
 
   const result = await contract.setMerchType(
-    2,
+    0,
     0,
     3,
     450,
