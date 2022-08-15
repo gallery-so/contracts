@@ -1,7 +1,7 @@
 async function main() {
   const contract = await ethers.getContractAt(
     "GalleryMerch",
-    process.env.CONTRACT_ADDRESS,
+    process.env.TESTNET_MERCH_CONTRACT_ADDRESS,
     await ethers.getSigner()
   );
   const result = await contract.withdraw(

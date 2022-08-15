@@ -91,6 +91,22 @@ contract GalleryMerch is ERC721A, Ownable, EIP712 {
         return _merchTypes[merchType].usedPublicSupply;
     }
 
+    function getPrice(uint256 merchType) public view returns (uint256) {
+        return _merchTypes[merchType].price;
+    }
+
+    function balanceOfType(uint256 merchType, address owner)
+        public
+        view
+        returns (uint256)
+    {
+        return _merchOwners[merchType][owner];
+    }
+
+    function isAllowlistOnly(uint256 merchType) public view returns (bool) {
+        return _merchTypes[merchType].allowlistMerkleRoot == 0;
+    }
+
     function getUsedReserveSupply(uint256 merchType)
         public
         view

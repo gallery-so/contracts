@@ -17,17 +17,20 @@ async function main() {
     await ethers.getSigner()
   );
 
-  const elements = ["0x456d569592f15af845d0dbe984c12bab8f430e31"];
+  const elements = [
+    "0x90d93d25db5c0be4ca49c6bd54d0ba91bde5573a",
+    "0x6c96da184a426d381e2fcc3bf22f50dd079340c0",
+    "0xe3e5549daa5ea2c1d451f352c63b13cb3920366f",
+  ];
   const tree = new MerkleTree(elements);
 
   const root = tree.getHexRoot();
 
   console.log(root);
-  console.log(tree.getHexProof("0x456d569592f15af845d0dbe984c12bab8f430e31"));
 
   const result = await contract.setMerchType(
+    2,
     0,
-    ethers.utils.parseEther("0.1"),
     3,
     450,
     50,
