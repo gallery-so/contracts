@@ -272,7 +272,8 @@ contract GalleryMerch is ERC721A, Ownable, EIP712 {
     function mintReserve(
         address[] calldata to,
         uint256[] calldata merchType,
-        uint256[] calldata amount
+        uint256[] calldata amount,
+        bool redeemedOnMint
     ) external payable onlyOwner {
         require(
             to.length == merchType.length && to.length == amount.length,
@@ -295,6 +296,9 @@ contract GalleryMerch is ERC721A, Ownable, EIP712 {
             _merchTypes[merchType[i]].usedReserveSupply += amount[i];
             for (uint256 j = 0; j < amount[i]; j++) {
                 _tokenIDToMerchType[_currentIndex + j] = merchType[i];
+                if (redeemedOnMint) {
+                    _redeemed[_currentIndex + j] = true;
+                }
             }
 
             _mint(to[i], amount[i], "", true);
