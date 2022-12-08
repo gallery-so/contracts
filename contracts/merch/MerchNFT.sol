@@ -29,6 +29,8 @@ contract GalleryMerch is ERC721A, Ownable, EIP712 {
 
     bool private canMint;
 
+    string public description;
+
     mapping(uint256 => bool) private _redeemed;
 
     mapping(uint256 => MerchType) private _merchTypes;
@@ -36,7 +38,12 @@ contract GalleryMerch is ERC721A, Ownable, EIP712 {
     mapping(uint256 => uint256) private _tokenIDToMerchType;
     mapping(address => uint256) private _transferNonces;
 
-    constructor() ERC721A("Gallery Merch", "GM") EIP712("GalleryMerch", "0") {}
+    constructor(string memory _description)
+        ERC721A("Gallery Merch", "GM")
+        EIP712("GalleryMerch", "0")
+    {
+        description = _description;
+    }
 
     function tokenURI(uint256 tokenId)
         public
@@ -73,6 +80,14 @@ contract GalleryMerch is ERC721A, Ownable, EIP712 {
             uri,
             redeemedURI
         );
+    }
+
+    function setDescription(string calldata _description) public onlyOwner {
+        description = _description;
+    }
+
+    function isRedeemed(uint256 tokenId) public view returns (bool) {
+        return _redeemed[tokenId];
     }
 
     function getPublicSupply(uint256 merchType) public view returns (uint256) {

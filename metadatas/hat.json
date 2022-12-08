@@ -1,6 +1,12 @@
 {
   "name": "Hat",
   "external_url": "https://gallery.so",
-  "description": "Redeemable Token for the Gallery Hat.",
-  "image": "ipfs://QmXKsU9pnK3zM4PEHUPSCsgaSGJSH1fioE4cLWgvYu6mSh"
+  "description": "Black hat with embroidered text design at center front and embroidered Gallery logo at center back.\n\nThe second entry in the (OBJECTS) Gallery merch collection.\n\nThis token may be used to claim 1 physical corresponding merch item during the redemption period.",
+  "image": "ipfs://Qmbhz8LHNuTuKrJ2xsAN9wyVnz1JANLFFywU79sGVPUWjF",
+  "attributes": [
+    {
+      "trait_type": "Object",
+      "value": "002"
+    }
+  ]
 }

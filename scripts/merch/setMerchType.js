@@ -13,15 +13,11 @@ const { MerkleTree } = require("../helpers/merkleTree");
 async function main() {
   const contract = await ethers.getContractAt(
     "GalleryMerch",
-    process.env.TESTNET_MERCH_CONTRACT_ADDRESS,
+    process.env.MERCH_CONTRACT_ADDRESS,
     await ethers.getSigner()
   );
 
-  const elements = [
-    "0x90d93d25db5c0be4ca49c6bd54d0ba91bde5573a",
-    "0x6c96da184a426d381e2fcc3bf22f50dd079340c0",
-    "0xe3e5549daa5ea2c1d451f352c63b13cb3920366f",
-  ];
+  const elements = [];
   const tree = new MerkleTree(elements);
 
   const root = tree.getHexRoot();
@@ -29,14 +25,15 @@ async function main() {
   console.log(root);
 
   const result = await contract.setMerchType(
-    0,
-    0,
+    2,
+    ethers.utils.parseEther("0.08"),
     3,
     450,
     50,
     root,
-    "ipfs://Qmc75Sbtw9CpQ6ngyXe8Uzoc4gBn66hH58B8i2dVGUiERg",
-    "ipfs://Qmc75Sbtw9CpQ6ngyXe8Uzoc4gBn66hH58B8i2dVGUiERg"
+    // ethers.constants.HashZero,
+    "ipfs://QmSPdA9Gg8xAdVxWvUyGkdFKQ8YMVYnGjYcr3cGMcBH1ae",
+    "ipfs://QmSPdA9Gg8xAdVxWvUyGkdFKQ8YMVYnGjYcr3cGMcBH1ae"
   );
   console.log("Tx: ", result.hash);
 }

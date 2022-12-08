@@ -5,11 +5,13 @@ const { MerkleTree } = require("./helpers/merkleTree");
 const openseaAPIKey = process.env.OPENSEA_API_KEY;
 const openseaAPIURL = "https://api.opensea.io/api/v1/assets";
 const zeroAddress = "0x0000000000000000000000000000000000000000";
-const contractaddresses = [];
+const contractaddresses = ["0xE3d0fe9B7E0B951663267a3Ed1e6577f6f79757e"];
 
 const toCheckOverlapAddresses = [""];
 
 const manualAdd = [];
+
+let pagesTurned = 0;
 
 const main = async () => {
   let toSnapshot = [];
@@ -67,7 +69,10 @@ const main = async () => {
 };
 
 const fetchAssets = async (contractAddress, cursor, retry, seen) => {
+  console.log(`Turned ${pagesTurned} pages`);
+  pagesTurned++;
   let toSnapshot = [];
+  console.log(`Seen length ${Object.keys(seen).length}`);
 
   if (seen === null || seen === undefined) {
     seen = {};
@@ -100,6 +105,7 @@ const fetchAssets = async (contractAddress, cursor, retry, seen) => {
 
   let stop = false;
   for (const asset of assets) {
+    console.log(`Asset ${JSON.stringify(asset)}`);
     if (asset.id in seen) {
       stop = true;
       break;

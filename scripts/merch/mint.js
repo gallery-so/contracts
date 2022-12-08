@@ -3,7 +3,7 @@ const { MerkleTree } = require("../helpers/merkleTree");
 async function main() {
   const contract = await ethers.getContractAt(
     "GalleryMerch",
-    process.env.TESTNET_MERCH_CONTRACT_ADDRESS,
+    process.env.MERCH_CONTRACT_ADDRESS,
     await ethers.getSigner()
   );
 

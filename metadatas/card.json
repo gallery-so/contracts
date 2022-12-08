@@ -1,6 +1,12 @@
 {
   "name": "Card",
   "external_url": "https://gallery.so",
-  "description": "Redeemable Token for the Gallery Card.",
-  "image": "ipfs://Qmbhz8LHNuTuKrJ2xsAN9wyVnz1JANLFFywU79sGVPUWjF"
+  "description": "Metallic membership card laser etched with the Gallery logo on the front and text design on the back.\n\nThe third entry in the (OBJECTS) Gallery merch collection.\n\nThis token may be used to claim 1 physical corresponding merch item during the redemption period.",
+  "image": "ipfs://QmNvtzqTRsn8kQ2zR3P3WS6cxK2s8rGdZQ4Ln4DQSHYXxt",
+  "attributes": [
+    {
+      "trait_type": "Object",
+      "value": "003"
+    }
+  ]
 }

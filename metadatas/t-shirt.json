@@ -1,6 +1,12 @@
 {
   "name": "T-Shirt",
   "external_url": "https://gallery.so",
-  "description": "Redeemable Token for the Gallery T-Shirt.",
-  "image": "ipfs://QmXKsU9pnK3zM4PEHUPSCsgaSGJSH1fioE4cLWgvYu6mSh"
+  "description": "Black short sleeve cotton t-shirt with puff-print design on left chest and both puff-print and screen-print design on full back.\n\nThe first entry in the (OBJECTS) Gallery merch collection.\n\nThis token may be used to claim 1 physical corresponding merch item during the redemption period",
+  "image": "ipfs://QmXKsU9pnK3zM4PEHUPSCsgaSGJSH1fioE4cLWgvYu6mSh",
+  "attributes": [
+    {
+      "trait_type": "Object",
+      "value": "001"
+    }
+  ]
 }
