@@ -4,8 +4,8 @@ async function main() {
     process.env.TESTNET_MEMENTOS_CONTRACT_ADDRESS,
     await ethers.getSigner()
   );
-  const result = await contract.setCanMint(true);
-  console.log("Tx: ", result.hash);
+  const result = await contract.getUsedSupply(0);
+  console.log("Used: ", result.toNumber());
 }
 
 main()

@@ -4,7 +4,7 @@ const { MerkleTree } = require("../helpers/merkleTree");
 async function main() {
   const contract = await ethers.getContractAt(
     "GalleryMementos",
-    process.env.MEMENTOS_CONTRACT_ADDRESS,
+    process.env.TESTNET_MEMENTOS_CONTRACT_ADDRESS,
     await ethers.getSigner()
   );
 
