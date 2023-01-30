@@ -5,3 +5,4 @@ artifacts/
 .env
 .openzeppelin/
 snapshot*.json
+*-lock.json
