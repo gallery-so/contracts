@@ -7,7 +7,6 @@ const {
   API_URL,
   PRIVATE_KEY,
   PUBLIC_KEY,
-  COIN_MARKET_CAP,
   TEST_URL,
   TEST_PRIVATE_KEY,
   TEST_PUBLIC_KEY,
@@ -58,11 +57,5 @@ module.exports = {
       accounts: [`0x${PRIVATE_KEY}`],
       gasPrice: 200000000,
     },
-  },
-  gasReporter: {
-    enabled: true,
-    currency: "USD",
-    gasPrice: 100,
-    coinmarketcap: COIN_MARKET_CAP,
   },
 }
