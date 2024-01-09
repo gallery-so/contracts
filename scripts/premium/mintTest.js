@@ -1,15 +1,16 @@
 async function main() {
+  const mintTo = []
   const contract = await ethers.getContractAt(
-    "Invite1155",
-    process.env.TESTNET_CONTRACT_ADDRESS,
+    "TestNFT",
+    process.env.TEST_PREMIUM_CONTRACT_ADDRESS,
     await ethers.getSigner()
   )
-  const result = await contract.setWhitelistCheck(
-    "ERC721",
-    process.env.TEST_CONTRACT_ADDRESS,
-    7
-  )
-  console.log("Tx: ", result.hash)
+  let i = 0
+  for (const to of mintTo) {
+    const tx = await contract.mint(to, i)
+    console.log("Tx: ", tx.hash)
+    i++
+  }
 }
 
 main()

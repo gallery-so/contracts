@@ -1,11 +1,11 @@
 async function main() {
   const contract = await ethers.getContractAt(
     "Invite1155",
-    process.env.CONTRACT_ADDRESS,
+    process.env.PREMIUM_CONTRACT_ADDRESS,
     await ethers.getSigner()
   )
-  const result = await contract.uri(5)
-  console.log(result)
+  const result = await contract.setMintApproval("", true, 5)
+  console.log("Tx: ", result.hash)
 }
 
 main()

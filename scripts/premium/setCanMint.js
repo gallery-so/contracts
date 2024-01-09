@@ -1,11 +1,11 @@
 async function main() {
   const contract = await ethers.getContractAt(
-    "GalleryMementosMultiMinter",
-    process.env.BASE_MEMENTOS_MULTI_CONTRACT_ADDRESS,
+    "Invite1155",
+    process.env.PREMIUM_CONTRACT_ADDRESS,
     await ethers.getSigner()
   )
-  const result = await contract.uri(0)
-  console.log(result)
+  const result = await contract.setCanMint(true)
+  console.log("Tx: ", result.hash)
 }
 
 main()

@@ -3,7 +3,6 @@
 // copied from https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v3.0.1/test/helpers/merkleTree.js
 
 const { bufferToHex } = require("ethereumjs-util")
-const { ethers } = require("hardhat")
 const web3 = require("web3")
 
 class MerkleTree {

@@ -1,10 +1,12 @@
 async function main() {
   const contract = await ethers.getContractAt(
-    "ERC721A",
-    process.env.HELPER_CONTRACT_ADDRESS,
+    "IERC1155MetadataURI",
+    "0x495f947276749Ce646f68AC8c248420045cb7b5e",
     await ethers.getSigner()
   )
-  const result = await contract.tokenURI("380786771184713729")
+  const result = await contract.uri(
+    "0x7E59DDE2EE81595574DDD55C98300B81467A3618000000000000480000000001"
+  )
   console.log(result)
 }
 

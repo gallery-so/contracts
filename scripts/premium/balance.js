@@ -1,16 +1,14 @@
 async function main() {
-  const mintTo = []
   const contract = await ethers.getContractAt(
-    "TestNFT",
-    process.env.TEST_CONTRACT_ADDRESS,
+    "Invite1155",
+    process.env.TESTNET_PREMIUM_CONTRACT_ADDRESS,
     await ethers.getSigner()
   )
-  let i = 0
-  for (const to of mintTo) {
-    const tx = await contract.mint(to, i)
-    console.log("Tx: ", tx.hash)
-    i++
-  }
+  const result = await contract.balanceOf(
+    "0xad74d773f534da4c45c8cc421acce98ff3769803",
+    3
+  )
+  console.log(result)
 }
 
 main()

@@ -1,6 +1,6 @@
 async function main() {
-  const Contract = await ethers.getContractFactory("GalleryMementosMultiMinter")
-  const contract = await Contract.deploy()
+  const Contract = await ethers.getContractFactory("Series")
+  const contract = await Contract.deploy("GallerySeries", "GS")
   console.log("Contract deployed to address:", contract.address)
 }
 

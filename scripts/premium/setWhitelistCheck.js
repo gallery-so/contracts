@@ -1,10 +1,14 @@
 async function main() {
   const contract = await ethers.getContractAt(
     "Invite1155",
-    process.env.CONTRACT_ADDRESS,
+    process.env.TESTNET_PREMIUM_CONTRACT_ADDRESS,
     await ethers.getSigner()
   )
-  const result = await contract.withdraw(0, "")
+  const result = await contract.setWhitelistCheck(
+    "ERC721",
+    process.env.TEST_PREMIUM_CONTRACT_ADDRESS,
+    7
+  )
   console.log("Tx: ", result.hash)
 }
 

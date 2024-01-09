@@ -3,7 +3,7 @@ const { BigNumber } = require("@ethersproject/bignumber")
 async function main() {
   const contract = await ethers.getContractAt(
     "Invite1155",
-    process.env.CONTRACT_ADDRESS,
+    process.env.PREMIUM_CONTRACT_ADDRESS,
     await ethers.getSigner()
   )
   const result = await contract.createType(0, "", BigNumber.from(""), 500)

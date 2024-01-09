@@ -1,7 +1,7 @@
-require("dotenv").config();
-require("@nomiclabs/hardhat-waffle");
-require("@nomiclabs/hardhat-truffle5");
-require("hardhat-gas-reporter");
+require("dotenv").config()
+require("@nomiclabs/hardhat-waffle")
+require("@nomiclabs/hardhat-truffle5")
+require("hardhat-gas-reporter")
 
 const {
   API_URL,
@@ -12,7 +12,7 @@ const {
   TEST_PRIVATE_KEY,
   TEST_PUBLIC_KEY,
   GAS_PRICE,
-} = process.env;
+} = process.env
 
 module.exports = {
   solidity: {
@@ -40,6 +40,24 @@ module.exports = {
       accounts: [`0x${TEST_PRIVATE_KEY}`],
       from: TEST_PUBLIC_KEY,
     },
+
+    "base-mainnet": {
+      url: "https://mainnet.base.org",
+      accounts: [`0x${PRIVATE_KEY}`],
+      gasPrice: Number(GAS_PRICE) ? Number(GAS_PRICE) : 10000000000,
+    },
+
+    "base-goerli": {
+      url: "https://goerli.base.org",
+      accounts: [`0x${TEST_PRIVATE_KEY}`],
+      from: TEST_PUBLIC_KEY,
+      gasPrice: 1000000000,
+    },
+    "arb-mainnet": {
+      url: "https://arb-mainnet.g.alchemy.com/v2/QNCdLbpuPIlw5waMnJos4eCwhrlMycDX",
+      accounts: [`0x${PRIVATE_KEY}`],
+      gasPrice: 200000000,
+    },
   },
   gasReporter: {
     enabled: true,
@@ -47,4 +65,4 @@ module.exports = {
     gasPrice: 100,
     coinmarketcap: COIN_MARKET_CAP,
   },
-};
+}

@@ -1,10 +1,10 @@
 async function main() {
   const contract = await ethers.getContractAt(
     "Invite1155",
-    process.env.CONTRACT_ADDRESS,
+    process.env.PREMIUM_CONTRACT_ADDRESS,
     await ethers.getSigner()
   )
-  const result = await contract.setCanMint(true)
+  const result = await contract.withdraw(0, "")
   console.log("Tx: ", result.hash)
 }
 

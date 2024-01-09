@@ -4,8 +4,8 @@ async function main() {
     process.env.BASE_MEMENTOS_MULTI_CONTRACT_ADDRESS,
     await ethers.getSigner()
   )
-  const result = await contract.uri(0)
-  console.log(result)
+  const result = await contract.getPrice(3)
+  console.log("Price: ", result.toNumber())
 }
 
 main()

@@ -1,13 +1,13 @@
 async function main() {
+  const whitelist = []
+  const whitelistValues = whitelist.map(() => true)
   const contract = await ethers.getContractAt(
     "Invite1155",
-    process.env.CONTRACT_ADDRESS,
+    process.env.PREMIUM_CONTRACT_ADDRESS,
     await ethers.getSigner()
   )
-  const result = await contract.getTotalSupply(4)
-  console.log(result.toNumber())
-  const used = await contract.getUsedSupply(4)
-  console.log(used.toNumber())
+  const result = await contract.setMintApprovals(whitelist, whitelistValues, 5)
+  console.log("Tx: ", result.hash)
 }
 
 main()

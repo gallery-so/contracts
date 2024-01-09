@@ -1,12 +1,11 @@
 async function main() {
   const contract = await ethers.getContractAt(
     "Invite1155",
-    process.env.CONTRACT_ADDRESS,
+    process.env.PREMIUM_CONTRACT_ADDRESS,
     await ethers.getSigner()
   )
-
-  const result = await contract.setPrice(0, ethers.BigNumber.from(""))
-  console.log("Tx: ", result.hash)
+  const result = await contract.isMintApproved("", 5)
+  console.log(result)
 }
 
 main()

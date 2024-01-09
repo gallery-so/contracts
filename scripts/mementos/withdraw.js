@@ -4,8 +4,11 @@ async function main() {
     process.env.BASE_MEMENTOS_MULTI_CONTRACT_ADDRESS,
     await ethers.getSigner()
   )
-  const result = await contract.uri(0)
-  console.log(result)
+  const result = await contract.withdraw(
+    0,
+    "0x3b341e64E7F4EFe753a31AC5114164Fa4b3149a4"
+  )
+  console.log("Tx: ", result.hash)
 }
 
 main()

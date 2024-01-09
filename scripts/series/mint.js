@@ -1,12 +1,17 @@
 async function main() {
-  const whitelist = []
-  const whitelistValues = whitelist.map(() => true)
   const contract = await ethers.getContractAt(
-    "Invite1155",
-    process.env.CONTRACT_ADDRESS,
+    "Series",
+    process.env.SERIES_CONTRACT_ADDRESS,
     await ethers.getSigner()
   )
-  const result = await contract.setMintApprovals(whitelist, whitelistValues, 5)
+
+  let minter = "0x9a3f9764B21adAF3C6fDf6f947e6D3340a3F8AC5"
+
+  const result = await contract.mint(
+    minter,
+    4,
+    "ipfs://QmebHLGavJvupB4vsxkDmqeGLTdHZUbqWXXWykjjpJCmVm"
+  )
   console.log("Tx: ", result.hash)
 }
 
